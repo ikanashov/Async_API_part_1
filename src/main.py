@@ -50,6 +50,7 @@ async def shutdown():
     await elastic.es.close()
 
 
+# Фильм на пробу из базы существующих 58bff82e-d892-4799-b9b3-964e9fb26398
 # Подключаем роутер к серверу, указав префикс /v1/film
 # Теги указываем для удобства навигации по документации
 app.include_router(film.router, prefix='/v1/film', tags=['film'])
@@ -62,8 +63,8 @@ if __name__ == '__main__':
         # поэтому сервер приложения для отладки запускаем здесь
     uvicorn.run(
         'main:app',
-        host='0.0.0.0',
-        port=8011,
+        host=config.UVICORN_HOST,
+        port=config.UVICORN_PORT,
         log_config=LOGGING,
         log_level=logging.DEBUG,
     )

@@ -13,13 +13,6 @@ logging_config.dictConfig(LOGGING)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class FastAPISettings(BaseSettings):
-    postgres_db: str = 'postgres'
-    postgres_host: str = 'localhost'
-    postgres_port: int = 5432
-    postgres_user: str = 'postgres'
-    postgres_password: str = ''
-    postgres_schema: str = 'public'
-    redis_prefix: str = ''
     REDIS_HOST: str = 'localhost'
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: str = ''
@@ -30,6 +23,8 @@ class FastAPISettings(BaseSettings):
     ELASTIC_PASSWORD: str = ''
     ELASTIC_INDEX: str = 'movies'
     PROJECT_NAME: str = 'movies'
+    UVICORN_HOST: str = '0.0.0.0'
+    UVICORN_PORT: int = 8000
 
     class Config:
         # Файл .env должен находится в корне проекта
