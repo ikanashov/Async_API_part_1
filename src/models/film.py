@@ -8,6 +8,7 @@ def _orjson_dumps(val, *, default):
 
 class Film(BaseModel):
     id: str
+    imdb_rating: float
     title: str
     description: str
 
