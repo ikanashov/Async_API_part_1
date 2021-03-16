@@ -1,9 +1,9 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 
 from services.film import FilmService, get_film_service
+from core.orjson import BaseModelOrjson
 
 
 # Объект router, в котором регистрируем обработчики
@@ -15,7 +15,7 @@ router = APIRouter()
 # Также она основана на дата-классах
 
 # Модель ответа API
-class Film(BaseModel):
+class Film(BaseModelOrjson):
     id: str
     imdb_rating: float
     title: str
