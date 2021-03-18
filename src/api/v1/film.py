@@ -18,11 +18,10 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
         # Желательно пользоваться уже определёнными HTTP-статусами, которые содержат enum  
                 # Такой код будет более поддерживаемым
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
-
     # Перекладываем данные из models.Film в Film
     # Обратите внимание, что у модели бизнес-логики есть поле description 
         # Которое отсутствует в модели ответа API. 
         # Если бы использовалась общая модель для бизнес-логики и формирования ответов API
         # вы бы предоставляли клиентам данные, которые им не нужны 
         # и, возможно, данные, которые опасно возвращать
-    return FilmDetail(id=film.id, imdb_rating=film.imdb_rating ,title=film.title) 
+    return FilmDetail(**film.dict(by_alias=True))
