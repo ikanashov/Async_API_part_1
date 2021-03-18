@@ -1,5 +1,7 @@
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+#Добавим пока просто зеленого!
+LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - \x1b[1;32m %(message)s'
 LOG_DEFAULT_HANDLERS = ['console', ]
+LOG_ROOT_LEVEL = 'DEBUG'
 
 # В логгере настраивается логгирование uvicorn-сервера.
 # Про логирование в Python можно прочитать в документации 
@@ -55,7 +57,7 @@ LOGGING = {
         },
     },
     'root': {
-        'level': 'INFO',
+        'level': LOG_ROOT_LEVEL,
         'formatter': 'verbose',
         'handlers': LOG_DEFAULT_HANDLERS,
     },
