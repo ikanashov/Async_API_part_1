@@ -13,7 +13,7 @@ class SFilmPerson(BaseModelOrjson):
         allow_population_by_field_name = True
 
 
-class Film(BaseModelOrjson):
+class SFilm(BaseModelOrjson):
     id: str = Field(..., alias='uuid')
     imdb_rating: float
     imdb_tconst: str
