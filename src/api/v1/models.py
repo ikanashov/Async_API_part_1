@@ -1,7 +1,9 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic.types import UUID4
+
 from core.orjson import BaseModelOrjson
+
 
 class FilmGenre(BaseModelOrjson):
     uuid: UUID4

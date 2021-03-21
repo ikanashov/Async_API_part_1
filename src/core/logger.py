@@ -1,11 +1,11 @@
-#Добавим пока просто зеленого!
+# Добавим пока просто зеленого!
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - \x1b[1;32m %(message)s'
 LOG_DEFAULT_HANDLERS = ['console', ]
 LOG_ROOT_LEVEL = 'DEBUG'
 
 # В логгере настраивается логгирование uvicorn-сервера.
-# Про логирование в Python можно прочитать в документации 
-# https://docs.python.org/3/howto/logging.html 
+# Про логирование в Python можно прочитать в документации
+# https://docs.python.org/3/howto/logging.html
 # https://docs.python.org/3/howto/logging-cookbook.html
 
 LOGGING = {
