@@ -1,3 +1,6 @@
+
+from datetime import date
+
 from typing import List, Optional
 
 from pydantic import Field
@@ -5,9 +8,20 @@ from pydantic import Field
 from core.orjson import BaseModelOrjson
 
 
-class SFilmPerson(BaseModelOrjson):
+class SFilmGenre(BaseModelOrjson):
     id: str = Field(..., alias='uuid')
     name: str
+    description: str
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class SFilmPerson(BaseModelOrjson):
+    id: str = Field(..., alias='uuid')
+    name: str = Field(..., alias='full_name')
+    birth_date: Optional[date]
+    death_date: Optional[date]
 
     class Config:
         allow_population_by_field_name = True

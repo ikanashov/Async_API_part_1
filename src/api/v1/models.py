@@ -10,7 +10,7 @@ class FilmGenre(BaseModelOrjson):
 
 class FilmPerson(BaseModelOrjson):
     uuid: UUID4
-    name: str
+    full_name: str
 
 
 # Модель ответа API
@@ -26,3 +26,8 @@ class FilmDetail(FilmShort):
     actors: Optional[List[FilmPerson]]
     writers: Optional[List[FilmPerson]]
     directors: Optional[List[FilmPerson]]
+
+
+class PersonDetail(FilmPerson):
+    role: str
+    film_ids: List[UUID4]
