@@ -1,20 +1,46 @@
-import orjson
 
-# Используем pydantic для упрощения работы при перегонке данных из json в объекты
-from pydantic import BaseModel
+from datetime import date
 
-def _orjson_dumps(val, *, default):
-    return orjson.dumps(val, default=default).decode()
+from typing import List, Optional
 
-class Film(BaseModel):
-    id: str
-    title: str
+from pydantic import Field
+
+from core.orjson import BaseModelOrjson
+
+
+class SFilmGenre(BaseModelOrjson):
+    id: str = Field(..., alias='uuid')
+    name: str
     description: str
 
     class Config:
-        # Заменяем стандартную работу с json на более быструю, 
-        # Здесь возникает ошибка надо разобраться пока починил вот так https://github.com/samuelcolvin/pydantic/issues/1150
-        #  File "pydantic/main.py", line 506, in pydantic.main.BaseModel.json
-        # TypeError: Expected unicode, got bytes
-        json_loads = orjson.loads
-        json_dumps = _orjson_dumps
+        allow_population_by_field_name = True
+
+
+class SFilmPerson(BaseModelOrjson):
+    id: str = Field(..., alias='uuid')
+    name: str = Field(..., alias='full_name')
+    birth_date: Optional[date]
+    death_date: Optional[date]
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class SFilm(BaseModelOrjson):
+    id: str = Field(..., alias='uuid')
+    imdb_rating: float
+    imdb_tconst: str
+    filmtype: str
+    genre: List[str]
+    title: str
+    description: Optional[str]
+    directors_names: Optional[List[str]]
+    actors_names: Optional[List[str]]
+    writers_names: Optional[List[str]]
+    directors: Optional[List[SFilmPerson]]
+    actors: Optional[List[SFilmPerson]]
+    writers: Optional[List[SFilmPerson]]
+
+    class Config:
+        allow_population_by_field_name = True
