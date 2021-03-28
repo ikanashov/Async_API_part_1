@@ -17,7 +17,7 @@ from core.logger import LOGGING
 from db import elastic
 from db import redis
 
-#Не забыть удалить
+# Не забыть удалить
 config.ELASTIC_HOST = 'dev.usurt.ru'
 config.ELASTIC_PORT = 9200
 

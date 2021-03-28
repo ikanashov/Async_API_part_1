@@ -1,6 +1,5 @@
-from typing import List, Optional, TypedDict
-
 from enum import Enum
+from typing import List, Optional, TypedDict
 
 from pydantic.types import UUID4
 
@@ -36,17 +35,20 @@ class PersonDetail(FilmPerson):
     role: str
     film_ids: List[UUID4]
 
+
 # unused class remove it
 class DictPage(TypedDict):
-    size: int 
+    size: int
     number: int
+
 
 # unused class remove it
 class Page(BaseModelOrjson):
     page: DictPage
 
+
 class FilmSort(str, Enum):
-    imdb_rating_asc: str = 'imdb_rating:asc' 
+    imdb_rating_asc: str = 'imdb_rating:asc'
     imdb_rating_asc_alias: str = 'imdb_rating'
     imdb_rating_desc: str = 'imdb_rating:desc'
     imdb_rating_desc_alias: str = '-imdb_rating'

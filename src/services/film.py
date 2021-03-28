@@ -24,6 +24,7 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('root')
 logger.debug('Start logging')
 
+
 # FilmService содержит бизнес-логику по работе с фильмами.
 # Никакой магии тут нет. Обычный класс с обычными методами.
 # Этот класс ничего не знает про DI — максимально сильный и независимый.
@@ -52,12 +53,12 @@ class FilmService:
         return film
 
     async def _get_all_film_from_elastic(self, sort: str, page_size: int, page_number: int) -> Optional[List[SFilm]]:
-        from_  = page_size * (page_number-1)
+        from_ = page_size * (page_number - 1)
         # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
         # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
         docs = await self.elastic.search(index=config.ELASTIC_INDEX, sort=sort, size=page_size, from_=from_)
         films = [SFilm(**doc['_source']) for doc in docs['hits']['hits']]
-        #logger.debug(films)
+        # logger.debug(films)
         return films
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[SFilm]:

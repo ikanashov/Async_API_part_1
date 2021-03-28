@@ -24,17 +24,19 @@ async def get_all_film(
     # https://github.com/tiangolo/fastapi/issues/884
     # https://github.com/tiangolo/fastapi/issues/1415
     # remove magic number 1, 50
-    page_size:  int = Query(50, alias='page[size]', ge = 1),
-    page_number: int = Query(1, alias='page[number]', ge = 1),    
+    page_size:  int = Query(50, alias='page[size]', ge=1),
+    page_number: int = Query(1, alias='page[number]', ge=1),
     film_service: FilmService = Depends(get_film_service)
     ):
+
     if sort == FilmSort.imdb_rating_asc_alias:
         sort = FilmSort.imdb_rating_asc
     if sort == FilmSort.imdb_rating_desc_alias:
         sort = FilmSort.imdb_rating_desc
-    films = await film_service._get_all_film_from_elastic(sort, page_size , page_number)
+    films = await film_service._get_all_film_from_elastic(sort, page_size, page_number)
     films = [FilmShort(**film.dict(by_alias=True)) for film in films]
     return films
+
 
 # Внедряем FilmService с помощью Depends(get_film_service)
 @router.get('/{film_id}', response_model=FilmDetail)
