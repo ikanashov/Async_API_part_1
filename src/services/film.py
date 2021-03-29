@@ -73,8 +73,8 @@ class FilmService:
 
     # Здесь же будем пытаться кэшировать и брать из кэша
     async def get_all_film(self, sort: str, page_size: int, page_number: int) -> Optional[List[SFilm]]:
-        film = await self._get_all_film_from_elastic(sort, page_size, page_number)
-        return film
+        films = await self._get_all_film_from_elastic(sort, page_size, page_number)
+        return films
 
     async def _get_all_film_from_elastic(self, sort: str, page_size: int, page_number: int) -> Optional[List[SFilm]]:
         from_ = page_size * (page_number - 1)
