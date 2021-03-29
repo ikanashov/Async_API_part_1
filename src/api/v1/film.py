@@ -18,7 +18,7 @@ async def get_all_film(
     page: Page = Depends(),
     film_service: FilmService = Depends(get_film_service)
 ):
-    films = await film_service._get_all_film_from_elastic(sort.sort, page.page_size, page.page_number)
+    films = await film_service.get_all_film(sort.sort, page.page_size, page.page_number)
     films = [FilmShort(**film.dict(by_alias=True)) for film in films]
     return films
 
