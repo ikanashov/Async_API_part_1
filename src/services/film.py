@@ -24,6 +24,30 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('root')
 logger.debug('Start logging')
 
+TEST_QUERY = '''{
+  "query": {
+    "term": {
+      "genre": {
+        "value": "Comedy",
+        "boost": 1.0
+      }
+    }
+  }
+}'''
+
+TEST_2_QUERY = '''{
+"query": {
+    "multi_match": {
+      "query": "captain",
+      "fields": [
+        "title",
+        "description"
+      ],
+      "type": "best_fields"
+    }
+  }
+}'''
+
 
 # FilmService содержит бизнес-логику по работе с фильмами.
 # Никакой магии тут нет. Обычный класс с обычными методами.
@@ -56,7 +80,7 @@ class FilmService:
         from_ = page_size * (page_number - 1)
         # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
         # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
-        docs = await self.elastic.search(index=config.ELASTIC_INDEX, sort=sort, size=page_size, from_=from_)
+        docs = await self.elastic.search(index=config.ELASTIC_INDEX, sort=sort, size=page_size, from_=from_, body=TEST_2_QUERY)
         films = [SFilm(**doc['_source']) for doc in docs['hits']['hits']]
         # logger.debug(films)
         return films
