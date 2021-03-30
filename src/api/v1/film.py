@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.v1.models import FilmDetail, FilmShort, FilmSort, FilmQuery, FilmGenreFilter, Page
+from api.v1.models import FilmDetail, FilmGenreFilter, FilmQuery, FilmShort, FilmSort, Page
 
 from services.film import FilmService, get_film_service
 
@@ -32,6 +32,7 @@ async def search_film(
 ) -> List[FilmShort]:
     films = await film_service.search_film(query.query, page.page_size, page.page_number)
     return films
+
 
 # Внедряем FilmService с помощью Depends(get_film_service)
 @router.get('/{film_id}', response_model=FilmDetail)

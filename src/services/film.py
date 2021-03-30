@@ -15,7 +15,7 @@ from core.logger import LOGGING
 from db.elastic import get_elastic
 from db.redis import get_redis
 
-from models.elastic import ESQuery, ESFilterGenre
+from models.elastic import ESFilterGenre, ESQuery
 from models.film import SFilm
 
 
@@ -50,8 +50,14 @@ class FilmService:
         return film
 
     # Здесь же будем пытаться кэшировать и брать из кэша
-    async def get_all_film(self, sort: str, page_size: int, page_number: int, genre_filter: str) -> Optional[List[SFilm]]:
-        if genre_filter != None:
+    async def get_all_film(
+        self,
+        sort: str,
+        page_size: int, page_number: int,
+        genre_filter: str
+    ) -> Optional[List[SFilm]]:
+
+        if genre_filter is not None:
             filter = ESFilterGenre()
             filter.query.term.genre.value = genre_filter
             genre_filter = filter.json()
@@ -65,11 +71,22 @@ class FilmService:
         films = await self._get_films_from_elastic(page_size, page_number, body=query_body.json(by_alias=True))
         return films
 
-    async def _get_films_from_elastic(self, page_size: int, page_number: int, sort: str = None, body: str = None) -> Optional[List[SFilm]]:
+    async def _get_films_from_elastic(
+        self,
+        page_size: int, page_number: int,
+        sort: str = None, body: str = None
+    ) -> Optional[List[SFilm]]:
+
         from_ = page_size * (page_number - 1)
         # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
         # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
-        docs = await self.elastic.search(index=config.ELASTIC_INDEX, sort=sort, size=page_size, from_=from_, body=body)
+        docs = await self.elastic.search(
+            index=config.ELASTIC_INDEX,
+            sort=sort,
+            size=page_size,
+            from_=from_,
+            body=body
+        )
         films = [SFilm(**doc['_source']) for doc in docs['hits']['hits']]
         # logger.debug(films)
         return films

@@ -7,7 +7,7 @@ from core.orjson import BaseModelOrjson
 
 class ESQuerySearchParameters(BaseModelOrjson):
     query: str = Field('')
-    search_fields: List[str] =  Field(['title', 'description'], alias='fields')
+    search_fields: List[str] = Field(['title', 'description'], alias='fields')
     type: str = 'best_fields'
 
 

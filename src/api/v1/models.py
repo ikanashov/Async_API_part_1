@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import List, Optional, TypedDict
 
-from pydantic.types import UUID4
-
 from fastapi import Query
+
+from pydantic.types import UUID4
 
 from core.orjson import BaseModelOrjson
 
@@ -47,6 +47,7 @@ class DictPage(TypedDict):
     size: int
     number: int
 
+
 # remove magic number 1, 50
 class Page:
     def __init__(
@@ -72,7 +73,7 @@ class FilmSort:
             FilmSortEnum.imdb_rating_desc_alias,
             title='Sort field',
             description='Sort field (default: "-imdb_rating", sort by imdb_rating in descending order)'
-        ) 
+        )
     ) -> None:
         if sort == FilmSortEnum.imdb_rating_asc_alias:
             sort = FilmSortEnum.imdb_rating_asc
@@ -88,7 +89,7 @@ class FilmGenreFilter:
             None,
             title='Genre filter',
             description='Filter films by genre',
-            alias = 'filter[genre]'
+            alias='filter[genre]'
         )
     ) -> None:
         self.genre_filter = genre_filter
