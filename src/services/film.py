@@ -15,7 +15,9 @@ from core.logger import LOGGING
 from db.elastic import get_elastic
 from db.redis import get_redis
 
+from models.elastic import ESQuery
 from models.film import SFilm
+
 
 # need to remove magic number
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
@@ -38,12 +40,9 @@ TEST_QUERY = '''{
 TEST_2_QUERY = '''{
 "query": {
     "multi_match": {
-      "query": "captain",
-      "fields": [
-        "title",
-        "description"
-      ],
-      "type": "best_fields"
+        "query": "imper",
+        "fields": ["title","description"],
+        "type": "best_fields"
     }
   }
 }'''
@@ -73,14 +72,20 @@ class FilmService:
 
     # Здесь же будем пытаться кэшировать и брать из кэша
     async def get_all_film(self, sort: str, page_size: int, page_number: int) -> Optional[List[SFilm]]:
-        films = await self._get_all_film_from_elastic(sort, page_size, page_number)
+        films = await self._get_films_from_elastic(page_size, page_number, sort)
         return films
 
-    async def _get_all_film_from_elastic(self, sort: str, page_size: int, page_number: int) -> Optional[List[SFilm]]:
+    async def search_film(self, query: str, page_size: int, page_number: int) -> Optional[List[SFilm]]:
+        query_body = ESQuery()
+        query_body.query.multi_match.query = query
+        films = await self._get_films_from_elastic(page_size, page_number, body=query_body.json(by_alias=True))
+        return films
+
+    async def _get_films_from_elastic(self, page_size: int, page_number: int, sort: str = None, body: str = None) -> Optional[List[SFilm]]:
         from_ = page_size * (page_number - 1)
         # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
         # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
-        docs = await self.elastic.search(index=config.ELASTIC_INDEX, sort=sort, size=page_size, from_=from_, body=TEST_2_QUERY)
+        docs = await self.elastic.search(index=config.ELASTIC_INDEX, sort=sort, size=page_size, from_=from_, body=body)
         films = [SFilm(**doc['_source']) for doc in docs['hits']['hits']]
         # logger.debug(films)
         return films

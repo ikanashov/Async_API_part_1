@@ -1,9 +1,9 @@
 from http import HTTPStatus
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 
-from api.v1.models import FilmDetail, FilmShort, FilmSort, Page
+from api.v1.models import FilmDetail, FilmShort, FilmSort, FilmQuery, Page
 
 from services.film import FilmService, get_film_service
 
@@ -22,6 +22,15 @@ async def get_all_film(
     films = [FilmShort(**film.dict(by_alias=True)) for film in films]
     return films
 
+
+@router.get('/search', response_model=List[FilmShort])
+async def search_film(
+    query: FilmQuery = Depends(),
+    page: Page = Depends(),
+    film_service: FilmService = Depends(get_film_service)
+) -> List[FilmShort]:
+    films = await film_service.search_film(query.query, page.page_size, page.page_number)
+    return films
 
 # Внедряем FilmService с помощью Depends(get_film_service)
 @router.get('/{film_id}', response_model=FilmDetail)

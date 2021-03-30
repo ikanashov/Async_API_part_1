@@ -76,3 +76,15 @@ class FilmSort:
         if sort == FilmSortEnum.imdb_rating_desc_alias:
             sort = FilmSortEnum.imdb_rating_desc
         self.sort = sort
+
+
+class FilmQuery:
+    def __init__(
+        self,
+        query: str = Query(
+            ...,
+            title='Query field',
+            description='Query field (search by word in title and description field)'
+        )
+    ) -> None:
+        self.query = query
