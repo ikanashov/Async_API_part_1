@@ -22,7 +22,10 @@ class FilmPerson(BaseModelOrjson):
 class FilmShort(BaseModelOrjson):
     uuid: UUID4
     title: str
+    # remove test field
     description: Optional[str]
+    # remove test field
+    genre: List[str]
     imdb_rating: float
 
 
@@ -76,6 +79,19 @@ class FilmSort:
         if sort == FilmSortEnum.imdb_rating_desc_alias:
             sort = FilmSortEnum.imdb_rating_desc
         self.sort = sort
+
+
+class FilmGenreFilter:
+    def __init__(
+        self,
+        genre_filter: Optional[str] = Query(
+            None,
+            title='Genre filter',
+            description='Filter films by genre',
+            alias = 'filter[genre]'
+        )
+    ) -> None:
+        self.genre_filter = genre_filter
 
 
 class FilmQuery:

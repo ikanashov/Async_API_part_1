@@ -15,7 +15,7 @@ from core.logger import LOGGING
 from db.elastic import get_elastic
 from db.redis import get_redis
 
-from models.elastic import ESQuery
+from models.elastic import ESQuery, ESFilterGenre
 from models.film import SFilm
 
 
@@ -25,27 +25,6 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('root')
 logger.debug('Start logging')
-
-TEST_QUERY = '''{
-  "query": {
-    "term": {
-      "genre": {
-        "value": "Comedy",
-        "boost": 1.0
-      }
-    }
-  }
-}'''
-
-TEST_2_QUERY = '''{
-"query": {
-    "multi_match": {
-        "query": "imper",
-        "fields": ["title","description"],
-        "type": "best_fields"
-    }
-  }
-}'''
 
 
 # FilmService содержит бизнес-логику по работе с фильмами.
@@ -71,8 +50,13 @@ class FilmService:
         return film
 
     # Здесь же будем пытаться кэшировать и брать из кэша
-    async def get_all_film(self, sort: str, page_size: int, page_number: int) -> Optional[List[SFilm]]:
-        films = await self._get_films_from_elastic(page_size, page_number, sort)
+    async def get_all_film(self, sort: str, page_size: int, page_number: int, genre_filter: str) -> Optional[List[SFilm]]:
+        if genre_filter != None:
+            filter = ESFilterGenre()
+            filter.query.term.genre.value = genre_filter
+            genre_filter = filter.json()
+            logger.debug(genre_filter)
+        films = await self._get_films_from_elastic(page_size, page_number, sort, body=genre_filter)
         return films
 
     async def search_film(self, query: str, page_size: int, page_number: int) -> Optional[List[SFilm]]:

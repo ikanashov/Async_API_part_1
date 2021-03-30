@@ -17,3 +17,20 @@ class ESQuerySearchType(BaseModelOrjson):
 
 class ESQuery(BaseModelOrjson):
     query: ESQuerySearchType = Field(ESQuerySearchType())
+
+
+class ESFilterGenreValue(BaseModelOrjson):
+    value: str = Field('')
+    boost: float = 1.0
+
+
+class ESFilterGenreField(BaseModelOrjson):
+    genre: ESFilterGenreValue = Field(ESFilterGenreValue())
+
+
+class ESFilterTermGenre(BaseModelOrjson):
+    term: ESFilterGenreField = Field(ESFilterGenreField())
+
+
+class ESFilterGenre(BaseModelOrjson):
+    query: ESFilterTermGenre = Field(ESFilterTermGenre())
