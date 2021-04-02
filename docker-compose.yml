@@ -39,6 +39,33 @@ services:
       - ./elastic/backup:/usr/share/elasticsearch/backup
     networks:
       - AsyncCinema
+  etlcinema:
+    restart: 'no'
+    container_name: ${DOCKER_PREFIX}ETLCinema
+    environment:
+      - POSTGRES_DB=$POSTGRES_DB
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_HOST=postgrescinema
+      - POSTGRES_SCHEMA=$POSTGRES_SCHEMA
+      - REDIS_PREFIX=$REDIS_PREFIX
+      - REDIS_HOST=rediscinema
+      - REDIS_PORT=$REDIS_PORT
+      - REDIS_PASSWORD=$REDIS_PASSWORD
+      - ELASTIC_HOST=elasticcinema01
+      - ELASTIC_PORT=$ELASTIC_PORT
+      - ELASTIC_USER=$ELASTIC_USER
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - ELASTIC_INDEX=$ELASTIC_INDEX
+      - ETL_SIZE_LIMIT=$ETL_SIZE_LIMIT
+    build: ./postgres_to_es/
+    command: /docker-entrypoint.sh
+    networks:
+      - AsyncCinema
+    depends_on:
+      - postgrescinema
+      - rediscinema
+      - elasticcinema01
   clientapicinema:
     restart: unless-stopped
     container_name: ${DOCKER_PREFIX}clientApi
