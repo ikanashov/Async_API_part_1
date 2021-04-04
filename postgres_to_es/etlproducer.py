@@ -1,3 +1,5 @@
+from typing import List
+
 from loguru import logger
 
 from etlclasses import ETLEnricherData, ETLProducerTable
@@ -11,10 +13,10 @@ class ETLProducer:
     producer_table = [
         ETLProducerTable(table='djfilmwork', isrelation=False),
         ETLProducerTable(table='djfilmperson', field='film_work_id', ptable='djfilmworkperson', pfield='person_id'),
-        ETLProducerTable(table='djfilmgenre', field='film_work_id', ptable='djfilmworkgenre', pfield='genre_id'),
+        ETLProducerTable(table='djfilmgenre', field='film_work_id', ptable='djfilmworkgenre', pfield='genre_id', isESindex=True),
         ETLProducerTable(table='djfilmtype', field='id', ptable='djfilmwork', pfield='type_id'),
     ]
-
+    
     def __init__(self):
         cnf = ETLSettings()
         self.limit = cnf.etl_size_limit
@@ -51,13 +53,15 @@ class ETLProducer:
             enricher.send(ETLEnricherData(data, idlist))
 
     @coroutine
-    def enricher(self):
+    def enricher(self, enrichothertable):
         """
         Get modified film id from main table.
         If table is main, simple get modifed film id.
         """
         while True:
             data: ETLEnricherData = (yield)
+            if data.table.isESindex and len(data.idlist) > 0:
+                enrichothertable.send(data)
             logger.info(f'get film id modifed by {data.table.table} and store it in Redis')
             offset = 0
             isupdatedid = True if len(data.idlist) > 0 else False
@@ -71,6 +75,16 @@ class ETLProducer:
                     offset += self.limit
                 else:
                     isupdatedid = False
+    
+    @coroutine
+    def enrichothertable(self):
+        """
+        Save modifided id from other table, to produce other ES index
+        """
+        while True:
+            data: ETLEnricherData = (yield)
+            logger.info(f'store {data.table.table} in redis to update its ESIndex')
+            [self.redis.push_tableid(id, data.table.table) for id in data.idlist]
 
     def start(self):
         if self.redis.get_status('producer') == 'run':
@@ -79,7 +93,8 @@ class ETLProducer:
         else:
             self.redis.set_status('producer', 'run')
 
-        enricher = self.enricher()
+        enrichothertable = self.enrichothertable()
+        enricher = self.enricher(enrichothertable)
         producer = self.producer(enricher)
         self.worker(producer)
 
