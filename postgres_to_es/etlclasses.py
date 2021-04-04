@@ -55,6 +55,7 @@ class ETLProducerTable:
     ptable: str = ''
     pfield: str = ''
     isrelation: bool = True
+    isESindex: bool = False
 
 
 @dataclass
