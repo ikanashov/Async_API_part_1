@@ -1,5 +1,3 @@
-from typing import List
-
 from loguru import logger
 
 from etlclasses import ETLEnricherData, ETLProducerTable
@@ -16,7 +14,7 @@ class ETLProducer:
         ETLProducerTable(table='djfilmgenre', field='film_work_id', ptable='djfilmworkgenre', pfield='genre_id', isESindex=True),
         ETLProducerTable(table='djfilmtype', field='id', ptable='djfilmwork', pfield='type_id'),
     ]
-    
+
     def __init__(self):
         cnf = ETLSettings()
         self.limit = cnf.etl_size_limit
@@ -75,7 +73,7 @@ class ETLProducer:
                     offset += self.limit
                 else:
                     isupdatedid = False
-    
+
     @coroutine
     def enrichothertable(self):
         """

@@ -25,4 +25,5 @@ class ETLSettings(BaseSettings):
     class Config:
         env_file = '../.env'
 
+
 config = ETLSettings()

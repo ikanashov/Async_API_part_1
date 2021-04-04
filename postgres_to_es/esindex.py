@@ -4,7 +4,7 @@ from etlsettings import config
 
 
 ES_SETTINGS = {
-  'index': {'number_of_shards': 1,'number_of_replicas': 0},
+  'index': {'number_of_shards': 1, 'number_of_replicas': 0},
   'refresh_interval': '1s',
   'analysis': {
     'filter': {
@@ -19,10 +19,10 @@ ES_SETTINGS = {
         'tokenizer': 'standard',
         'filter': [
           'lowercase',
-          'english_stop','english_stemmer', 'english_possessive_stemmer',
+          'english_stop', 'english_stemmer', 'english_possessive_stemmer',
           'russian_stop', 'russian_stemmer'
         ]
-      }  
+      }
     }
   }
 }
