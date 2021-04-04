@@ -55,6 +55,17 @@ class ETLRedis:
         self.redis.eval(script, 1, self.queuename, id)
 
     @backoff(start_sleep_time=0.001, jitter=False)
+    def push_tableid(self, id: str, table: str) -> None:
+        """
+        Attomic push unique id from table to Redis queue
+        """
+        queuename = self.prefix + table + ':ids'
+        pipe = self.redis.pipeline(transaction=True)
+        pipe.lrem(queuename, 0, id)
+        pipe.lpush(queuename, id)
+        pipe.execute
+
+    @backoff(start_sleep_time=0.001, jitter=False)
     def get_filmid_for_work(self, size) -> list:
         """
         Move film id from queue to workqueue to load or update it in elastic
