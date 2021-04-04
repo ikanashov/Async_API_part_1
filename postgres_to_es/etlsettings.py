@@ -18,7 +18,11 @@ class ETLSettings(BaseSettings):
     elastic_user: str = 'elastic'
     elastic_password: str = ''
     elastic_index: str = 'movies'
+    elastic_film_index: str = 'movies'
+    elastic_genre_index: str = 'genres'
     etl_size_limit: int = 10
 
     class Config:
         env_file = '../.env'
+
+config = ETLSettings()
