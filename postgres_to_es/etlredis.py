@@ -1,4 +1,5 @@
 from datetime import datetime
+from loguru import logger
 
 from redis import Redis
 
@@ -63,7 +64,7 @@ class ETLRedis:
         pipe = self.redis.pipeline(transaction=True)
         pipe.lrem(queuename, 0, id)
         pipe.lpush(queuename, id)
-        pipe.execute
+        pipe.execute()
 
     @backoff(start_sleep_time=0.001, jitter=False)
     def get_filmid_for_work(self, size) -> list:
