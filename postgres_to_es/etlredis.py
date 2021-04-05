@@ -79,5 +79,22 @@ class ETLRedis:
         return workid
 
     @backoff(start_sleep_time=0.001, jitter=False)
-    def del_work_queuename(self):
-        self.redis.delete(self.workqueuename)
+    def get_tableid_for_work(self, size, table) -> list:
+        """
+        Move table id from queue to workqueue to load or update it in elastic
+        """
+        queuename = self.prefix + table + ':ids'
+        workqueuename = queuename + ':work'
+        size -= self.redis.llen(workqueuename)
+        while size > 0:
+            self.redis.rpoplpush(queuename, workqueuename)
+            size -= 1
+        len = self.redis.llen(workqueuename)
+        workid = self.redis.lrange(workqueuename, 0, len)
+        return workid
+
+    @backoff(start_sleep_time=0.001, jitter=False)
+    def del_work_queuename(self, workqueuename=''):
+        # Добавлено до момента, перехода на универсальные функции push/get tableid
+        workqueuename = self.workqueuename if workqueuename == '' else workqueuename
+        self.redis.delete(workqueuename)
