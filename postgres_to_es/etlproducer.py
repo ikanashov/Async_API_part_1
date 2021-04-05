@@ -4,16 +4,11 @@ from etlclasses import ETLEnricherData, ETLProducerTable
 from etldecorator import coroutine, some_sleep
 from etlpostgres import ETLPG
 from etlredis import ETLRedis
-from etlsettings import ETLSettings
+from etlsettings import ETLSettings, postgres_table
 
 
 class ETLProducer:
-    producer_table = [
-        ETLProducerTable(table='djfilmwork', isrelation=False),
-        ETLProducerTable(table='djfilmperson', field='film_work_id', ptable='djfilmworkperson', pfield='person_id'),
-        ETLProducerTable(table='djfilmgenre', field='film_work_id', ptable='djfilmworkgenre', pfield='genre_id', isESindex=True),
-        ETLProducerTable(table='djfilmtype', field='id', ptable='djfilmwork', pfield='type_id'),
-    ]
+    producer_table = postgres_table
 
     def __init__(self):
         cnf = ETLSettings()
