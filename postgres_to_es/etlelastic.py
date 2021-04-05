@@ -19,7 +19,6 @@ class ETLElastic:
         self.port = cnf.elastic_port
         self.scheme = cnf.elastic_scheme
         self.http_auth = (cnf.elastic_user, cnf.elastic_password)
-        self.index_name = cnf.elastic_index
 
         self.es = self.connect()
 
@@ -34,13 +33,13 @@ class ETLElastic:
             logger.warning(error)
 
     @backoff(start_sleep_time=0.5)
-    def bulk_update(self, docs: List[ESMovie]) -> bool:
+    def bulk_update(self, index_name: str, docs: List[ESMovie]) -> bool:
         if docs == []:
             logger.warning('No more data to update in elastic')
             return None
         body = ''
         for doc in docs:
-            index = {'index': {'_index': self.index_name, '_id': doc.id}}
+            index = {'index': {'_index': index_name, '_id': doc.id}}
             body += json.dumps(index) + '\n' + json.dumps(asdict(doc)) + '\n'
 
         results = self.es.bulk(body)
