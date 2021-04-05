@@ -28,6 +28,13 @@ class ESMovie:
 
 
 @dataclass
+class ETLFilmGenre:
+    id: uuid.UUID
+    name: str
+    description: str
+
+
+@dataclass
 class ETLFilmWork:
     id: uuid.UUID
     rating: float

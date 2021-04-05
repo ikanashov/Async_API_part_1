@@ -3,7 +3,7 @@ from typing import List
 
 from psycopg2 import connect as pgconnect, sql
 
-from etlclasses import ETLFilmWork, ETLModifiedID, ETLProducerTable
+from etlclasses import ETLFilmGenre, ETLFilmWork, ETLModifiedID, ETLProducerTable
 from etldecorator import backoff
 from etlsettings import ETLSettings
 
@@ -30,6 +30,7 @@ class ETLPG:
     WHERE fw.id IN %s
     GROUP BY fw.id, ft.id
     '''
+    GETGENREBYID = 'SELECT id, name, description from djfilmgenre WHERE id in %s'
 
     def __init__(self):
         self.cnf = ETLSettings()
@@ -88,3 +89,7 @@ class ETLPG:
     def get_filmsbyid(self, idlists: tuple) -> List[ETLFilmWork]:
         films = [ETLFilmWork(*row) for row in self.pg_multy_query(self.GETFILMSBYID, (idlists,))]
         return films
+
+    def get_genrebyid(self, idlists: tuple) -> List[ETLFilmGenre]:
+        genres = [ETLFilmGenre(*row) for row in self.pg_multy_query(self.GETFILMSBYID, (idlists,))]
+        return genres
