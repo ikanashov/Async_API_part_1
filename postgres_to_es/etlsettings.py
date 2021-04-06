@@ -22,6 +22,7 @@ class ETLSettings(BaseSettings):
     elastic_index: str = 'movies'
     elastic_film_index: str = 'movies'
     elastic_genre_index: str = 'genres'
+    elastic_person_index: str = 'persons'
     etl_size_limit: int = 10
 
     class Config:

@@ -55,6 +55,25 @@ CINEMA_GENRE_INDEX_BODY = {
     }
 }
 
+CINEMA_PERSON_INDEX_BODY = {
+    'settings': ES_SETTINGS,
+    'mappings': {
+        'dynamic': 'strict',
+        'properties': {
+            'id': {'type': 'keyword'},
+            'full_name': {**ES_PROPERTIES_CONFIG_text_ru_en, **ES_PROPERTIES_CONFIG_raw_fields},
+            'imdb_nconst': {'type': 'keyword'},
+            'birth_date' : {'type': 'date', 'format': 'yyyy-MM-dd'},
+            'death_date' : {'type': 'date', 'format': 'yyyy-MM-dd'},
+            'role': {'type': 'keyword'},
+            'filmids': {'type': 'keyword'},
+            'directorsfilmids': {'type': 'keyword'},
+            'actorsfilmids': {'type': 'keyword'},
+            'writersfilmids': {'type': 'keyword'},
+        }
+    }
+}
+
 CINEMA_FILM_INDEX_BODY = {
     'settings': ES_SETTINGS,
     'mappings': {
@@ -85,6 +104,10 @@ ES_INDEXES = {
     'GENRE_INDEX': {
         'name': config.elastic_genre_index,
         'body_json': json.dumps(CINEMA_GENRE_INDEX_BODY)
+    },
+    'PERSON_INDEX': {
+        'name': config.elastic_person_index,
+        'body_json': json.dumps(CINEMA_PERSON_INDEX_BODY)
     }
 }
 
