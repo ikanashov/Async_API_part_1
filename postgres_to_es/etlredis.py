@@ -94,7 +94,7 @@ class ETLRedis:
         return workid
 
     @backoff(start_sleep_time=0.001, jitter=False)
-    def del_work_queuename(self, workqueuename=''):
+    def del_work_queuename(self, table=''):
         # Добавлено до момента, перехода на универсальные функции push/get tableid
-        workqueuename = self.workqueuename if workqueuename == '' else workqueuename
+        workqueuename = self.workqueuename if table == '' else self.prefix + table + ':ids:work'
         self.redis.delete(workqueuename)
