@@ -1,5 +1,7 @@
 from pydantic import BaseSettings
 
+from etlclasses import ETLProducerTable
+
 
 class ETLSettings(BaseSettings):
     postgres_db: str = 'postgres'
@@ -18,7 +20,21 @@ class ETLSettings(BaseSettings):
     elastic_user: str = 'elastic'
     elastic_password: str = ''
     elastic_index: str = 'movies'
+    elastic_film_index: str = 'movies'
+    elastic_genre_index: str = 'genres'
     etl_size_limit: int = 10
 
     class Config:
         env_file = '../.env'
+
+
+config = ETLSettings()
+
+postgres_table = [
+    ETLProducerTable(table='djfilmwork', isrelation=False),
+    ETLProducerTable(table='djfilmperson', field='film_work_id', ptable='djfilmworkperson', pfield='person_id'),
+    ETLProducerTable(
+        table='djfilmgenre', field='film_work_id', ptable='djfilmworkgenre', pfield='genre_id', isESindex=True
+    ),
+    ETLProducerTable(table='djfilmtype', field='id', ptable='djfilmwork', pfield='type_id'),
+]

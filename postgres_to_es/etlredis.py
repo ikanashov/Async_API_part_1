@@ -55,6 +55,17 @@ class ETLRedis:
         self.redis.eval(script, 1, self.queuename, id)
 
     @backoff(start_sleep_time=0.001, jitter=False)
+    def push_tableid(self, id: str, table: str) -> None:
+        """
+        Attomic push unique id from table to Redis queue
+        """
+        queuename = self.prefix + table + ':ids'
+        pipe = self.redis.pipeline(transaction=True)
+        pipe.lrem(queuename, 0, id)
+        pipe.lpush(queuename, id)
+        pipe.execute()
+
+    @backoff(start_sleep_time=0.001, jitter=False)
     def get_filmid_for_work(self, size) -> list:
         """
         Move film id from queue to workqueue to load or update it in elastic
@@ -68,5 +79,22 @@ class ETLRedis:
         return workid
 
     @backoff(start_sleep_time=0.001, jitter=False)
-    def del_work_queuename(self):
-        self.redis.delete(self.workqueuename)
+    def get_tableid_for_work(self, size, table) -> list:
+        """
+        Move table id from queue to workqueue to load or update it in elastic
+        """
+        queuename = self.prefix + table + ':ids'
+        workqueuename = queuename + ':work'
+        size -= self.redis.llen(workqueuename)
+        while size > 0:
+            self.redis.rpoplpush(queuename, workqueuename)
+            size -= 1
+        len = self.redis.llen(workqueuename)
+        workid = self.redis.lrange(workqueuename, 0, len)
+        return workid
+
+    @backoff(start_sleep_time=0.001, jitter=False)
+    def del_work_queuename(self, table=''):
+        # Добавлено до момента, перехода на универсальные функции push/get tableid
+        workqueuename = self.workqueuename if table == '' else self.prefix + table + ':ids:work'
+        self.redis.delete(workqueuename)
