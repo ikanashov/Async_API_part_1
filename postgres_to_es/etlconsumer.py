@@ -32,7 +32,7 @@ class ETLConsumer:
             for table in self.producer_table:
                 if table.isESindex:
                     getdatafromtable.send(table)
-        
+
         if self.redis.get_status('consumer') == 'stop':
             logger.info('consumer stopped by stop signal')
 
@@ -100,7 +100,7 @@ class ETLConsumer:
             self.redis.set_status('consumer', 'run')
             self.es.create_index(self.index_name, esbody)
             self.es.create_index(ES_INDEXES['GENRE_INDEX']['name'], ES_INDEXES['GENRE_INDEX']['body_json'])
-        
+
         # level 2
         putfilmtoes = self.put_films_to_ES()
         datatoes = self.put_data_to_ES()

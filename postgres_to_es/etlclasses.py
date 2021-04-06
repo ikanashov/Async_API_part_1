@@ -9,6 +9,7 @@ class ESPerson:
     id: str
     name: str
 
+
 @dataclass
 class ESGenres:
     id: str
