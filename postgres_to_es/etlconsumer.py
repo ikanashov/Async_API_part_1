@@ -98,6 +98,7 @@ class ETLConsumer:
         else:
             self.redis.set_status('consumer', 'run')
             self.es.create_index(self.index_name, esbody)
+            self.es.create_index(ES_INDEXES['GENRE_INDEX']['name'], ES_INDEXES['GENRE_INDEX']['body_json'])
         
         # level 2
         putfilmtoes = self.put_films_to_ES()
