@@ -3,13 +3,13 @@ from typing import List
 from loguru import logger
 
 from esindex import CINEMA_INDEX_BODY as esbody
-from .esindex import ES_INDEXES
-from .etlclasses import ESGenres, ESMovie, ESPerson, ETLFilmWork, ETLProducerTable
+from esindex import ES_INDEXES
+from etlclasses import ESGenres, ESMovie, ESPerson, ETLFilmWork, ETLProducerTable
 from etldecorator import coroutine, some_sleep
-from .etlelastic import ETLElastic
-from .etlpostgres import ETLPG
-from .etlredis import ETLRedis
-from .etlsettings import ETLSettings, postgres_table
+from etlelastic import ETLElastic
+from etlpostgres import ETLPG
+from etlredis import ETLRedis
+from etlsettings import ETLSettings, postgres_table
 
 
 class ETLConsumer:
@@ -28,7 +28,7 @@ class ETLConsumer:
 
     def worker(self, getfilmsidfromredis, getdatafromtable) -> ETLProducerTable:
         while self.redis.get_status('consumer') == 'run':
-            getfilmsidfromredis.send()
+            getfilmsidfromredis.send(None)
             for table in self.producer_table:
                 if table.isESindex:
                     getdatafromtable.send(table)
@@ -39,13 +39,13 @@ class ETLConsumer:
     @coroutine
     def get_data_from_table(self, datatoes) -> dict:
         while True:
-            data: ETLProducerTable (yield)
+            data: ETLProducerTable = (yield)
             datas = {}
             idlists = self.redis.get_tableid_for_work(self.limit, data.table)
             datas['table'] = data
             if (len(idlists) > 0) and (data.table == 'djfilmgenre'):
                 logger.info(f'Get {data.table} id to load to ES')
-                datas['data'] = self.pgbase.get_genrebyid(idlists)
+                datas['data'] = self.pgbase.get_genrebyid(tuple(idlists))
                 datatoes.send(datas)
 
     @coroutine
@@ -54,7 +54,7 @@ class ETLConsumer:
             datas = (yield)
             logger.info(f'Start loading to ES index from {datas["table"].table}')
             if datas['table'].table == 'djfilmgenre':
-                esdata = [ESGenres(**row) for row in datas['data']]
+                esdata = [ESGenres(row.id, row.name, row.description) for row in datas['data']]
                 if self.es.bulk_update(ES_INDEXES['GENRE_INDEX']['name'], esdata):
                     self.redis.del_work_queuename('djfilmgenre')
                     logger.info(f'Data succesfully loaded from  {datas["table"].table}, delet working queue')
@@ -64,6 +64,7 @@ class ETLConsumer:
     @coroutine
     def get_filmsid_from_redis(self, putfilmtoes) -> List[ETLFilmWork]:
         while True:
+            data = (yield)
             logger.info('Get film id to load to ES')
             idlists = self.redis.get_filmid_for_work(self.limit)
             films = self.pgbase.get_filmsbyid(tuple(idlists)) if len(idlists) > 0 else []
