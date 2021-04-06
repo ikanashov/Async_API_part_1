@@ -26,6 +26,8 @@ services:
   elasticcinema01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
     container_name: ${DOCKER_PREFIX}cinemaES01
+    ports:
+      - $ELASTIC_PORT:$ELASTIC_PORT
     environment:
       - node.name=elasticcinema01
       - http.port=$ELASTIC_PORT
