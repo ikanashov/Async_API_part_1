@@ -30,7 +30,7 @@ class ETLPG:
     WHERE fw.id IN %s
     GROUP BY fw.id, ft.id
     '''
-    GETGENREBYID = 'SELECT id, name, description from djfilmgenre WHERE id in %s'
+    GETGENREBYID = 'SELECT id, name, description from djfilmgenre WHERE id IN %s'
 
     def __init__(self):
         self.cnf = ETLSettings()
@@ -91,5 +91,5 @@ class ETLPG:
         return films
 
     def get_genrebyid(self, idlists: tuple) -> List[ETLFilmGenre]:
-        genres = [ETLFilmGenre(*row) for row in self.pg_multy_query(self.GETFILMSBYID, (idlists,))]
+        genres = [ETLFilmGenre(*row) for row in self.pg_multy_query(self.GETGENREBYID, (idlists,))]
         return genres
