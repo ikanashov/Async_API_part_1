@@ -42,6 +42,20 @@ class ETLFilmGenre:
 
 
 @dataclass
+class ETLFilmPerson:
+    id: uuid.UUID
+    full_name: str
+    imdb_nconst: str
+    birth_date: datetime.date
+    death_date: datetime.date
+    role: List[str]
+    filmids: List[uuid.UUID]
+    directorsfilmids: List[uuid.UUID]
+    actorsfilmids: List[uuid.UUID]
+    writersfilmids: List[uuid.UUID]
+
+
+@dataclass
 class ETLFilmWork:
     id: uuid.UUID
     rating: float
