@@ -44,6 +44,7 @@ class ETLPG:
     WHERE fp.id IN %s 
     GROUP BY fp.id
     '''
+    GETTABLEUPDATEDID = 'SELECT DISTINCT {pfield} FROM {ptable} WHERE {field} IN %s'
 
     def __init__(self):
         self.cnf = ETLSettings()
@@ -108,5 +109,14 @@ class ETLPG:
         return genres
 
     def get_personbyid(self, idlists: tuple) -> List[ETLFilmPerson]:
-        films = [ETLFilmPerson(*row) for row in self.pg_multy_query(self.GETPERSONBYID, (idlists,))]
-        return films
+        persons = [ETLFilmPerson(*row) for row in self.pg_multy_query(self.GETPERSONBYID, (idlists,))]
+        return persons
+
+    def get_updated_table_id(self, producer: ETLProducerTable, idlists: tuple) -> list:
+        query = sql.SQL(self.GETTABLEUPDATEDID).format(
+            field=sql.Identifier(producer.field),
+            ptable=sql.Identifier(producer.ptable),
+            pfield=sql.Identifier(producer.pfield)
+        )
+        tableids = [id for (id,) in self.pg_multy_query(query, (idlists,))]
+        return tableids

@@ -64,6 +64,10 @@ class ETLProducer:
                     if data.table.isrelation else data.idlist
                 )
                 [self.redis.push_filmid(id) for id in filmids]
+                if data.table.isESindex:
+                    enrichothertable.send(
+                        ETLEnricherData(data.table, self.pgbase.get_updated_table_id(data.table, tuple(filmids)))
+                    )
                 if (len(filmids) == self.limit) and (data.table.isrelation):
                     offset += self.limit
                 else:
