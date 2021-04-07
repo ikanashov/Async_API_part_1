@@ -32,12 +32,14 @@ class ETLSettings(BaseSettings):
 config = ETLSettings()
 
 postgres_table = [
-    ETLProducerTable(table='djfilmwork', isrelation=False),
+    ETLProducerTable(table='djfilmwork', isrelation=False, ESindexconf='FILM_INDEX'),
     ETLProducerTable(
-        table='djfilmperson', field='film_work_id', ptable='djfilmworkperson', pfield='person_id', isESindex=True
+        table='djfilmperson', field='film_work_id', ptable='djfilmworkperson', pfield='person_id',
+        isESindex=True, ESindexconf='PERSON_INDEX'
     ),
     ETLProducerTable(
-        table='djfilmgenre', field='film_work_id', ptable='djfilmworkgenre', pfield='genre_id', isESindex=True
+        table='djfilmgenre', field='film_work_id', ptable='djfilmworkgenre', pfield='genre_id',
+        isESindex=True, ESindexconf='GENRE_INDEX'
     ),
     ETLProducerTable(table='djfilmtype', field='id', ptable='djfilmwork', pfield='type_id'),
 ]

@@ -40,7 +40,7 @@ class ETLElastic:
         body = ''
         for doc in docs:
             index = {'index': {'_index': index_name, '_id': doc.id}}
-            body += json.dumps(index) + '\n' + json.dumps(asdict(doc)) + '\n'
+            body += json.dumps(index) + '\n' + json.dumps(asdict(doc), default=str) + '\n'
 
         results = self.es.bulk(body)
         if results['errors']:

@@ -18,6 +18,20 @@ class ESGenres:
 
 
 @dataclass
+class ESPersons:
+    id: str
+    full_name: str
+    imdb_nconst: str
+    birth_date: datetime.date
+    death_date: datetime.date
+    role: List[str]
+    filmids: List[str]
+    directorsfilmids: List[str]
+    actorsfilmids: List[str]
+    writersfilmids: List[str]
+   
+
+@dataclass
 class ESMovie:
     id: str
     imdb_rating: float
@@ -84,6 +98,7 @@ class ETLProducerTable:
     pfield: str = ''
     isrelation: bool = True
     isESindex: bool = False
+    ESindexconf: str = ''
 
 
 @dataclass
