@@ -3,7 +3,7 @@ from typing import List
 
 from psycopg2 import connect as pgconnect, sql
 
-from etlclasses import ETLFilmGenre, ETLFilmWork, ETLModifiedID, ETLFilmPerson, ETLProducerTable
+from etlclasses import ETLFilmGenre, ETLFilmPerson, ETLFilmWork, ETLModifiedID, ETLProducerTable
 from etldecorator import backoff
 from etlsettings import ETLSettings
 
