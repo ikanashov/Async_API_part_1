@@ -29,7 +29,7 @@ class ESPersons:
     directorsfilmids: List[str]
     actorsfilmids: List[str]
     writersfilmids: List[str]
-   
+ 
 
 @dataclass
 class ESMovie:
