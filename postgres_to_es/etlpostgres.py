@@ -3,7 +3,7 @@ from typing import List
 
 from psycopg2 import connect as pgconnect, sql
 
-from etlclasses import ETLFilmGenre, ETLFilmWork, ETLModifiedID, ETLFilmPerson, ETLProducerTable
+from etlclasses import ETLFilmGenre, ETLFilmPerson, ETLFilmWork, ETLModifiedID, ETLProducerTable
 from etldecorator import backoff
 from etlsettings import ETLSettings
 
@@ -32,16 +32,16 @@ class ETLPG:
     '''
     GETGENREBYID = 'SELECT id, name, description from djfilmgenre WHERE id IN %s'
     GETPERSONBYID = '''
-    SELECT 
+    SELECT
         fp.id, fp.full_name, fp.imdb_nconst,
         fp.birth_date, fp.death_date,
         ARRAY_AGG(DISTINCT fwp.role) AS role,
         ARRAY_AGG(DISTINCT CAST(fwp.film_work_id AS VARCHAR)) AS filmids,
         ARRAY_AGG(CAST(fwp.film_work_id AS VARCHAR)) FILTER (WHERE fwp.role = 'director') AS directors,
         ARRAY_AGG(CAST(fwp.film_work_id AS VARCHAR)) FILTER (WHERE fwp.role = 'actor') AS actor,
-        ARRAY_AGG(CAST(fwp.film_work_id AS VARCHAR)) FILTER (WHERE fwp.role = 'writer') AS writer 
+        ARRAY_AGG(CAST(fwp.film_work_id AS VARCHAR)) FILTER (WHERE fwp.role = 'writer') AS writer
     FROM djfilmperson AS fp LEFT OUTER JOIN djfilmworkperson AS fwp ON fp.id = fwp.person_id
-    WHERE fp.id IN %s 
+    WHERE fp.id IN %s
     GROUP BY fp.id
     '''
     GETTABLEUPDATEDID = 'SELECT DISTINCT {pfield} FROM {ptable} WHERE {field} IN %s'

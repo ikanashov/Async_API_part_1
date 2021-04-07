@@ -48,7 +48,7 @@ class ETLConsumer:
                 if (data.table == 'djfilmgenre'):
                     datas['data'] = self.pgbase.get_genrebyid(tuple(idlists))
                 if (len(idlists) > 0) and (data.table == 'djfilmperson'):
-                    datas['data'] = self.pgbase.get_personbyid(tuple(idlists))   
+                    datas['data'] = self.pgbase.get_personbyid(tuple(idlists))
                 datatoes.send(datas)
 
     @coroutine

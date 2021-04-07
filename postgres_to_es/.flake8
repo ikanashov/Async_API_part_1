@@ -2,5 +2,5 @@
 max-line-length = 118
 #select = C,E,F,W,B,B9
 #ignore = E203, E501, W503
-ignore = A001, A002, A003
+ignore = A001, A002, A003, I100, I201, Q001
 exclude = __init__.py
