@@ -74,8 +74,8 @@ class ETLRedis:
         while size > 0:
             self.redis.rpoplpush(self.queuename, self.workqueuename)
             size -= 1
-        len = self.redis.llen(self.workqueuename)
-        workid = self.redis.lrange(self.workqueuename, 0, len)
+        length = self.redis.llen(self.workqueuename)
+        workid = self.redis.lrange(self.workqueuename, 0, length)
         return workid
 
     @backoff(start_sleep_time=0.001, jitter=False)
@@ -89,8 +89,8 @@ class ETLRedis:
         while size > 0:
             self.redis.rpoplpush(queuename, workqueuename)
             size -= 1
-        len = self.redis.llen(workqueuename)
-        workid = self.redis.lrange(workqueuename, 0, len)
+        length = self.redis.llen(workqueuename)
+        workid = self.redis.lrange(workqueuename, 0, length)
         return workid
 
     @backoff(start_sleep_time=0.001, jitter=False)
