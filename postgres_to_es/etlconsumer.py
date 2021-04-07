@@ -4,7 +4,7 @@ from loguru import logger
 
 from esindex import CINEMA_INDEX_BODY as esbody
 from esindex import ES_INDEXES
-from etlclasses import ESGenres, ESMovie, ESPerson, ETLFilmWork, ETLProducerTable
+from etlclasses import ESGenres, ESMovie, ESPerson, ESPersons, ETLFilmWork, ETLProducerTable
 from etldecorator import coroutine, some_sleep
 from etlelastic import ETLElastic
 from etlpostgres import ETLPG
@@ -43,9 +43,12 @@ class ETLConsumer:
             datas = {}
             idlists = self.redis.get_tableid_for_work(self.limit, data.table)
             datas['table'] = data
-            if (len(idlists) > 0) and (data.table == 'djfilmgenre'):
+            if (len(idlists) > 0):
                 logger.info(f'Get {data.table} id to load to ES')
-                datas['data'] = self.pgbase.get_genrebyid(tuple(idlists))
+                if (data.table == 'djfilmgenre'):
+                    datas['data'] = self.pgbase.get_genrebyid(tuple(idlists))
+                if (len(idlists) > 0) and (data.table == 'djfilmperson'):
+                    datas['data'] = self.pgbase.get_personbyid(tuple(idlists))   
                 datatoes.send(datas)
 
     @coroutine
@@ -54,12 +57,22 @@ class ETLConsumer:
             datas = (yield)
             logger.info(f'Start loading to ES index from {datas["table"].table}')
             if datas['table'].table == 'djfilmgenre':
-                esdata = [ESGenres(row.id, row.name, row.description) for row in datas['data']]
-                if self.es.bulk_update(ES_INDEXES['GENRE_INDEX']['name'], esdata):
-                    self.redis.del_work_queuename('djfilmgenre')
-                    logger.info(f'Data succesfully loaded from  {datas["table"].table}, delet working queue')
-                else:
-                    some_sleep(min_sleep_time=1, max_sleep_time=10)
+                esdata = [ESGenres(
+                    row.id, row.name, row.description
+                ) for row in datas['data']]
+            if datas['table'].table == 'djfilmperson':
+                esdata = [ESPersons(
+                    row.id, row.full_name, row.imdb_nconst,
+                    row.birth_date, row.death_date,
+                    row.role, row.filmids,
+                    row.directorsfilmids, row.actorsfilmids, row.writersfilmids
+                ) for row in datas['data']]
+                pass
+            if self.es.bulk_update(ES_INDEXES[datas['table'].ESindexconf]['name'], esdata):
+                self.redis.del_work_queuename(datas['table'].table)
+                logger.info(f'Data succesfully loaded from  {datas["table"].table}, working queue')
+            else:
+                some_sleep(min_sleep_time=1, max_sleep_time=10)
 
     @coroutine
     def get_filmsid_from_redis(self, putfilmtoes) -> List[ETLFilmWork]:
@@ -100,6 +113,7 @@ class ETLConsumer:
             self.redis.set_status('consumer', 'run')
             self.es.create_index(self.index_name, esbody)
             self.es.create_index(ES_INDEXES['GENRE_INDEX']['name'], ES_INDEXES['GENRE_INDEX']['body_json'])
+            self.es.create_index(ES_INDEXES['PERSON_INDEX']['name'], ES_INDEXES['PERSON_INDEX']['body_json'])
 
         # level 2
         putfilmtoes = self.put_films_to_ES()

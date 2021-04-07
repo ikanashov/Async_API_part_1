@@ -22,6 +22,7 @@ class ETLSettings(BaseSettings):
     elastic_index: str = 'movies'
     elastic_film_index: str = 'movies'
     elastic_genre_index: str = 'genres'
+    elastic_person_index: str = 'persons'
     etl_size_limit: int = 10
 
     class Config:
@@ -31,10 +32,14 @@ class ETLSettings(BaseSettings):
 config = ETLSettings()
 
 postgres_table = [
-    ETLProducerTable(table='djfilmwork', isrelation=False),
-    ETLProducerTable(table='djfilmperson', field='film_work_id', ptable='djfilmworkperson', pfield='person_id'),
+    ETLProducerTable(table='djfilmwork', isrelation=False, ESindexconf='FILM_INDEX'),
     ETLProducerTable(
-        table='djfilmgenre', field='film_work_id', ptable='djfilmworkgenre', pfield='genre_id', isESindex=True
+        table='djfilmperson', field='film_work_id', ptable='djfilmworkperson', pfield='person_id',
+        isESindex=True, ESindexconf='PERSON_INDEX'
+    ),
+    ETLProducerTable(
+        table='djfilmgenre', field='film_work_id', ptable='djfilmworkgenre', pfield='genre_id',
+        isESindex=True, ESindexconf='GENRE_INDEX'
     ),
     ETLProducerTable(table='djfilmtype', field='id', ptable='djfilmwork', pfield='type_id'),
 ]

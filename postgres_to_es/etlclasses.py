@@ -18,6 +18,20 @@ class ESGenres:
 
 
 @dataclass
+class ESPersons:
+    id: str
+    full_name: str
+    imdb_nconst: str
+    birth_date: datetime.date
+    death_date: datetime.date
+    role: List[str]
+    filmids: List[str]
+    directorsfilmids: List[str]
+    actorsfilmids: List[str]
+    writersfilmids: List[str]
+   
+
+@dataclass
 class ESMovie:
     id: str
     imdb_rating: float
@@ -39,6 +53,20 @@ class ETLFilmGenre:
     id: uuid.UUID
     name: str
     description: str
+
+
+@dataclass
+class ETLFilmPerson:
+    id: uuid.UUID
+    full_name: str
+    imdb_nconst: str
+    birth_date: datetime.date
+    death_date: datetime.date
+    role: List[str]
+    filmids: List[uuid.UUID]
+    directorsfilmids: List[uuid.UUID]
+    actorsfilmids: List[uuid.UUID]
+    writersfilmids: List[uuid.UUID]
 
 
 @dataclass
@@ -70,6 +98,7 @@ class ETLProducerTable:
     pfield: str = ''
     isrelation: bool = True
     isESindex: bool = False
+    ESindexconf: str = ''
 
 
 @dataclass
