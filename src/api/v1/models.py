@@ -37,6 +37,9 @@ class FilmDetail(FilmShort):
     directors: Optional[List[FilmPerson]]
 
 
+class FilmGenreDetail(FilmGenre):
+    description: Optional[str]
+
 class FilmPersonDetail(FilmPerson):
     role: str
     film_ids: List[UUID4]

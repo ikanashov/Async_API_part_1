@@ -37,6 +37,7 @@ class FilmService:
 
     # !!! Здесь начинаем работать с ручкой (слово-то какое) film !!!
     # get_by_id возвращает объект фильма. Он опционален, так как фильм может отсутствовать в базе
+    # Не забыть переименовать название
     async def get_by_id(self, film_id: str) -> Optional[SFilm]:
         # Пытаемся получить данные из кеша, потому что оно работает быстрее
         film = await self._film_from_cache(film_id)
@@ -144,6 +145,18 @@ class FilmService:
         genres = [SFilmGenre(**doc['_source']) for doc in docs['hits']['hits']]
         # logger.debug(genres)
         return genres
+
+    async def get_genre_by_id(self, genre_id: str) -> Optional[SFilmGenre]:
+        # Пытаемся пока не получать данные из кеша, потому что оно работает быстрее, но это следующее задание
+        genre = await self._get_genre_from_elastic(genre_id)
+        if not genre:
+            # Если он отсутствует в Elasticsearch, значит, жанра вообще нет в базе
+            return None
+        return genre
+
+    async def _get_genre_from_elastic(self, genre_id: str) -> Optional[SFilmGenre]:
+        doc = await self.elastic.get(config.ELASTIC_GENRE_INDEX, genre_id)
+        return SFilmGenre(**doc['_source'])
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) genre !!!
 
 # get_film_service — это провайдер FilmService.

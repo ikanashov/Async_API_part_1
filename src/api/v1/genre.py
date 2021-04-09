@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.v1.models import FilmGenre, FilmGenreSort, Page
+from api.v1.models import FilmGenre, FilmGenreDetail, FilmGenreSort, Page
 
 from services.film import FilmService, get_film_service
 
@@ -21,21 +21,11 @@ async def get_all_genre(
     genres = [FilmGenre(**film.dict(by_alias=True)) for film in genres]
     return genres
 
-'''
-# Внедряем FilmService с помощью Depends(get_film_service)
-@router.get('/{film_id}', response_model=FilmDetail)
-async def film_details(film_id: str, film_service: FilmService = Depends(get_film_service)) -> FilmDetail:
-    film = await film_service.get_by_id(film_id)
-    if not film:
-        # Если фильм не найден, отдаём 404 статус
-        # Желательно пользоваться уже определёнными HTTP-статусами, которые содержат enum
-        # Такой код будет более поддерживаемым
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
-        # Перекладываем данные из models.Film в Film
-        # Обратите внимание, что у модели бизнес-логики есть поле description
-        # Которое отсутствует в модели ответа API.
-        # Если бы использовалась общая модель для бизнес-логики и формирования ответов API
-        # вы бы предоставляли клиентам данные, которые им не нужны
-        # и, возможно, данные, которые опасно возвращать
-    return FilmDetail(**film.dict(by_alias=True))
-'''
+# Для примера берем 5bd77168-c5b1-4c9d-bd1f-1193582d9e66
+@router.get('/{genre_id}', response_model=FilmGenreDetail)
+async def genre_details(genre_id: str, film_service: FilmService = Depends(get_film_service)) -> FilmGenreDetail:
+    genre = await film_service.get_genre_by_id(genre_id)
+    if not genre:
+        # Если жанр не найден, отдаём 404 статус
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='genre not found')
+    return FilmGenreDetail(**genre.dict(by_alias=True))
