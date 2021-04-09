@@ -9,7 +9,7 @@ from fastapi.responses import ORJSONResponse
 
 import uvicorn as uvicorn
 
-from api.v1 import genre, film
+from api.v1 import genre, film, person
 
 from core.config import config
 from core.logger import LOGGING
@@ -56,9 +56,11 @@ async def shutdown():
 
 
 # Фильм на пробу из базы существующих 58bff82e-d892-4799-b9b3-964e9fb26398
+app.include_router(genre.router, prefix='/api/v1/genre', tags=['genre'])
+
 app.include_router(film.router, prefix='/api/v1/film', tags=['film'])
 
-app.include_router(genre.router, prefix='/api/v1/genre', tags=['genre'])
+app.include_router(person.router, prefix='/api/v1/person', tags=['person'])
 
 
 if __name__ == '__main__':
