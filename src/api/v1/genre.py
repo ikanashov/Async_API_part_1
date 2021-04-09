@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.v1.models import FilmGenre
+from api.v1.models import FilmGenre, FilmGenreSort, Page
 
 from services.film import FilmService, get_film_service
 
@@ -11,11 +11,15 @@ from services.film import FilmService, get_film_service
 # Объект router, в котором регистрируем обработчики
 router = APIRouter()
 
-@router.get('/genre', response_model=List[FilmGenre])
+@router.get('', response_model=List[FilmGenre])
 async def get_all_genre(
+    sort: FilmGenreSort = Depends(),
+    page: Page = Depends(),
     film_service: FilmService = Depends(get_film_service)
 ) -> List[FilmGenre]:
-    return [FilmGenre(uuid = 'c5348b55-68b1-4273-8fbd-9c1372c16039', name = 'test')]
+    genres = await film_service.get_all_genre(sort.sort, page.page_size, page.page_number)
+    genres = [FilmGenre(**film.dict(by_alias=True)) for film in genres]
+    return genres
 
 '''
 # Внедряем FilmService с помощью Depends(get_film_service)

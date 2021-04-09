@@ -12,7 +12,7 @@ from services.film import FilmService, get_film_service
 router = APIRouter()
 
 
-@router.get('', response_model=List[FilmShort])
+@router.get('', response_model=List[FilmShort], tags=['genre'])
 async def get_all_film(
     genre_filter: FilmGenreFilter = Depends(),
     sort: FilmSort = Depends(),

@@ -22,6 +22,7 @@ class FastAPISettings(BaseSettings):
     ELASTIC_USER: str = 'elastic'
     ELASTIC_PASSWORD: str = ''
     ELASTIC_INDEX: str = 'movies'
+    ELASTIC_GENRE_INDEX: str = 'genres'
     PROJECT_NAME: str = 'movies'
     UVICORN_HOST: str = '0.0.0.0'
     UVICORN_PORT: int = 8000

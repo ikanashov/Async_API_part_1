@@ -16,7 +16,7 @@ from db.elastic import get_elastic
 from db.redis import get_redis
 
 from models.elastic import ESFilterGenre, ESQuery
-from models.film import SFilm
+from models.film import SFilm, SFilmGenre
 
 
 # need to remove magic number
@@ -35,6 +35,7 @@ class FilmService:
         self.redis = redis
         self.elastic = elastic
 
+    # !!! Здесь начинаем работать с ручкой (слово-то какое) film !!!
     # get_by_id возвращает объект фильма. Он опционален, так как фильм может отсутствовать в базе
     async def get_by_id(self, film_id: str) -> Optional[SFilm]:
         # Пытаемся получить данные из кеша, потому что оно работает быстрее
@@ -112,7 +113,38 @@ class FilmService:
         # https://redis.io/commands/set
         # pydantic позволяет сериализовать модель в json
         await self.redis.set(film.id, film.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
+    # !!! Здесь заканчиваем работать с ручкой (слово-то какое) film !!!
 
+    # !!! Здесь начинаем работать с ручкой (слово-то какое) genre !!!
+    async def get_all_genre(
+        self,
+        sort: str,
+        page_size: int, page_number: int,
+    ) -> Optional[List[SFilmGenre]]:
+
+        genres = await self._get_genres_from_elastic(page_size, page_number, sort)
+        return genres
+
+    async def _get_genres_from_elastic(
+        self,
+        page_size: int, page_number: int,
+        sort: str = None, body: str = '{"query": {"match_all": {}}}'
+    ) -> Optional[List[SFilmGenre]]:
+
+        from_ = page_size * (page_number - 1)
+        # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
+        # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
+        docs = await self.elastic.search(
+            index=config.ELASTIC_GENRE_INDEX,
+            sort=sort,
+            size=page_size,
+            from_=from_,
+            body=body
+        )
+        genres = [SFilmGenre(**doc['_source']) for doc in docs['hits']['hits']]
+        # logger.debug(genres)
+        return genres
+    # !!! Здесь заканчиваем работать с ручкой (слово-то какое) genre !!!
 
 # get_film_service — это провайдер FilmService.
 # С помощью Depends он сообщает, что ему необходимы Redis и Elasticsearch

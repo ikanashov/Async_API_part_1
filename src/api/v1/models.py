@@ -82,6 +82,29 @@ class FilmSort:
         self.sort = sort
 
 
+class FilmGenreSortEnum(str, Enum):
+    genre_name_asc: str = 'name:asc'
+    genre_name_asc_alias: str = 'name'
+    genre_name_desc: str = 'name:desc'
+    genre_name_desc_alias: str = '-name'
+
+
+class FilmGenreSort:
+    def __init__(
+        self,
+        sort: FilmGenreSortEnum = Query(
+            FilmGenreSortEnum.genre_name_asc,
+            title='Sort field',
+            description='Sort field (default: "name:asc", sort by name in ascending order)'
+        )
+    ) -> None:
+        if sort == FilmGenreSortEnum.genre_name_asc_alias:
+            sort = FilmGenreSortEnum.genre_name_asc
+        if sort == FilmGenreSortEnum.genre_name_desc_alias:
+            sort = FilmGenreSortEnum.genre_name_desc
+        self.sort = sort
+
+
 class FilmGenreFilter:
     def __init__(
         self,
