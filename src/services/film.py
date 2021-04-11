@@ -188,6 +188,18 @@ class FilmService:
         persons = [SFilmPersonDetail(**doc['_source']) for doc in docs['hits']['hits']]
         # logger.debug(persons)
         return persons
+
+    async def get_person_by_id(self, person_id: str) -> Optional[SFilmPersonDetail]:
+        # Пытаемся пока не получать данные из кеша, потому что оно работает быстрее, но это следующее задание
+        person = await self._get_person_from_elastic(person_id)
+        if not person:
+            # Если он отсутствует в Elasticsearch, значит, человека вообще нет в базе
+            return None
+        return person
+
+    async def _get_person_from_elastic(self, person_id: str) -> Optional[SFilmPersonDetail]:
+        doc = await self.elastic.get(config.ELASTIC_PERSON_INDEX, person_id)
+        return SFilmPersonDetail(**doc['_source'])
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) person !!!
 
 
