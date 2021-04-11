@@ -40,8 +40,9 @@ class FilmDetail(FilmShort):
 class FilmGenreDetail(FilmGenre):
     description: Optional[str]
 
+
 class FilmPersonDetail(FilmPerson):
-    role: str
+    role: List[str]
     film_ids: List[UUID4]
 
 
@@ -131,3 +132,28 @@ class FilmQuery:
         )
     ) -> None:
         self.query = query
+
+
+class FilmPersonSortEnum(str, Enum):
+    person_name_asc: str = 'full_name:asc'
+    person_name_asc_alias: str = 'full_name'
+    person_name_desc: str = 'full_name:desc'
+    person_name_desc_alias: str = '-full_name'
+
+
+class FilmPersonSort:
+    def __init__(
+        self,
+        sort: FilmPersonSortEnum = Query(
+            FilmPersonSortEnum.person_name_asc,
+            title='Sort field',
+            description='Sort field (default: "full_name:asc", sort by full_name in ascending order)'
+        )
+    ) -> None:
+        if sort == FilmPersonSortEnum.person_name_asc_alias:
+            sort = FilmPersonSortEnum.person_name_asc
+        if sort == FilmPersonSortEnum.person_name_desc_alias:
+            sort = FilmPersonSortEnum.person_name_desc
+        # full_name is text field with raw, sort on raw field
+        sort = sort.replace(':', '.raw:')
+        self.sort = sort

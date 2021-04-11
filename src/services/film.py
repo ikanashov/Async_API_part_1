@@ -16,7 +16,7 @@ from db.elastic import get_elastic
 from db.redis import get_redis
 
 from models.elastic import ESFilterGenre, ESQuery
-from models.film import SFilm, SFilmGenre
+from models.film import SFilm, SFilmGenre, SFilmPersonDetail
 
 
 # need to remove magic number
@@ -158,6 +158,38 @@ class FilmService:
         doc = await self.elastic.get(config.ELASTIC_GENRE_INDEX, genre_id)
         return SFilmGenre(**doc['_source'])
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) genre !!!
+
+    # !!! Здесь начинаем работать с ручкой (слово-то какое) person !!!
+    async def get_all_person(
+        self,
+        sort: str,
+        page_size: int, page_number: int,
+    ) -> Optional[List[SFilmPersonDetail]]:
+
+        persons = await self._get_persons_from_elastic(page_size, page_number, sort)
+        return persons
+
+    async def _get_persons_from_elastic(
+        self,
+        page_size: int, page_number: int,
+        sort: str = None, body: str = '{"query": {"match_all": {}}}'
+    ) -> Optional[List[SFilmPersonDetail]]:
+
+        from_ = page_size * (page_number - 1)
+        # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
+        # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
+        docs = await self.elastic.search(
+            index=config.ELASTIC_PERSON_INDEX,
+            sort=sort,
+            size=page_size,
+            from_=from_,
+            body=body
+        )
+        persons = [SFilmPersonDetail(**doc['_source']) for doc in docs['hits']['hits']]
+        # logger.debug(persons)
+        return persons
+    # !!! Здесь заканчиваем работать с ручкой (слово-то какое) person !!!
+
 
 # get_film_service — это провайдер FilmService.
 # С помощью Depends он сообщает, что ему необходимы Redis и Elasticsearch

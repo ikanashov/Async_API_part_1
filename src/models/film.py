@@ -15,12 +15,27 @@ class SFilmGenre(BaseModelOrjson):
     class Config:
         allow_population_by_field_name = True
 
-
+# Наследовать следующий класс от этого, возможно только переделав индекс film в elastic
 class SFilmPerson(BaseModelOrjson):
     id: str = Field(..., alias='uuid')
     name: str = Field(..., alias='full_name')
     birth_date: Optional[date]
     death_date: Optional[date]
+
+    class Config:
+        allow_population_by_field_name = True
+
+    
+class SFilmPersonDetail(BaseModelOrjson):
+    id: str = Field(..., alias='uuid')
+    full_name: str
+    birth_date: Optional[date]
+    death_date: Optional[date]
+    role: List[str]
+    filmids: List[str] = Field(..., alias='film_ids')
+    directorfilmids: Optional[List[str]]
+    actorsfilmids: Optional[List[str]]
+    writersfilmids: Optional[List[str]]
 
     class Config:
         allow_population_by_field_name = True
