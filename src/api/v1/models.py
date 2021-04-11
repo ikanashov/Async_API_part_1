@@ -134,6 +134,18 @@ class FilmQuery:
         self.query = query
 
 
+class FilmPersonQuery:
+    def __init__(
+        self,
+        query: str = Query(
+            ...,
+            title='Query field',
+            description='Query field (search by word in full_name field)'
+        )
+    ) -> None:
+        self.query = query
+
+
 class FilmPersonSortEnum(str, Enum):
     person_name_asc: str = 'full_name:asc'
     person_name_asc_alias: str = 'full_name'

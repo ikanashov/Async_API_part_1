@@ -3,13 +3,14 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.v1.models import FilmPersonDetail, FilmPersonSort, Page
+from api.v1.models import FilmPersonDetail, FilmPersonQuery, FilmPersonSort, Page
 
 from services.film import FilmService, get_film_service
 
 
 # Объект router, в котором регистрируем обработчики
 router = APIRouter()
+
 
 @router.get('', response_model=List[FilmPersonDetail])
 async def get_all_person(
@@ -20,6 +21,17 @@ async def get_all_person(
     persons = await film_service.get_all_person(sort.sort, page.page_size, page.page_number)
     persons = [FilmPersonDetail(**person.dict(by_alias=True)) for person in persons]
     return persons
+
+
+@router.get('/search', response_model=List[FilmPersonDetail])
+async def search_person(
+    query: FilmPersonQuery = Depends(),
+    page: Page = Depends(),
+    film_service: FilmService = Depends(get_film_service)
+) -> List[FilmPersonDetail]:
+    persons = await film_service.search_person(query.query, page.page_size, page.page_number)
+    return persons
+
 
 @router.get('/{person_id}', response_model=FilmPersonDetail)
 async def person_details(person_id: str, film_service: FilmService = Depends(get_film_service)) -> FilmPersonDetail:

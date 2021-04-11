@@ -1,7 +1,8 @@
+import json
 import logging
 import logging.config
 from functools import lru_cache
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from aioredis import Redis
 
@@ -167,6 +168,11 @@ class FilmService:
     ) -> Optional[List[SFilmPersonDetail]]:
 
         persons = await self._get_persons_from_elastic(page_size, page_number, sort)
+        return persons
+
+    async def search_person(self, query: str, page_size: int, page_number: int) -> Optional[List[SFilmPersonDetail]]:
+        query_body: Dict = {'query': {'match': {'full_name': {'query': query, 'fuzziness': 'AUTO'}}}}
+        persons = await self._get_persons_from_elastic(page_size, page_number, body=json.dumps(query_body))
         return persons
 
     async def _get_persons_from_elastic(
