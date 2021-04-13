@@ -20,9 +20,6 @@ from models.elastic import ESFilterGenre, ESQuery
 from models.film import SFilm, SFilmGenre, SFilmPersonDetail
 
 
-# need to remove magic number
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
-
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('root')
 logger.debug('Start logging')
@@ -114,7 +111,7 @@ class FilmService:
         # Выставляем время жизни кеша — 5 минут
         # https://redis.io/commands/set
         # pydantic позволяет сериализовать модель в json
-        await self.redis.set(film.id, film.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
+        await self.redis.set(film.id, film.json(), expire=config.CLIENTAPI_CACHE_EXPIRE)
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) film !!!
 
     # !!! Здесь начинаем работать с ручкой (слово-то какое) genre !!!

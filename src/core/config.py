@@ -28,6 +28,7 @@ class FastAPISettings(BaseSettings):
     UVICORN_HOST: str = '0.0.0.0'
     UVICORN_PORT: int = 8000
     CLIENTAPI_DEFAULT_PAGE_SIZE: int = 50
+    CLIENTAPI_CACHE_EXPIRE: int = 60 * 5
 
     class Config:
         # Файл .env должен находится в корне проекта
