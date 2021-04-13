@@ -50,9 +50,7 @@ class FilmService:
         await self.redis.set(key, data, expire=config.CLIENTAPI_CACHE_EXPIRE)
 
     # !!! Здесь начинаем работать с ручкой (слово-то какое) film !!!
-    # get_by_id возвращает объект фильма. Он опционален, так как фильм может отсутствовать в базе
-    # Не забыть переименовать название
-    async def get_by_id(self, film_id: str) -> Optional[SFilm]:
+    async def get_film_by_id(self, film_id: str) -> Optional[SFilm]:
         data = await self._get_data_from_cache(film_id)
         if data:
             film = SFilm.parse_raw(data)
