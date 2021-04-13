@@ -173,6 +173,14 @@ class FilmService:
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) genre !!!
 
     # !!! Здесь начинаем работать с ручкой (слово-то какое) person !!!
+    async def get_person_by_id(self, person_id: str) -> Optional[SFilmPersonDetail]:
+        # Пытаемся пока не получать данные из кеша, потому что оно работает быстрее, но это следующее задание
+        person = await self._get_person_from_elastic(person_id)
+        if not person:
+            # Если он отсутствует в Elasticsearch, значит, человека вообще нет в базе
+            return None
+        return person
+    
     async def get_all_person(
         self,
         sort: str,
@@ -187,6 +195,13 @@ class FilmService:
         persons = await self._get_persons_from_elastic(page_size, page_number, body=json.dumps(query_body))
         return persons
 
+    async def _get_person_from_elastic(self, person_id: str) -> Optional[SFilmPersonDetail]:
+        try:
+            doc = await self.elastic.get(config.ELASTIC_PERSON_INDEX, person_id)
+        except ESNotFoundError:
+            return None
+        return SFilmPersonDetail(**doc['_source'])
+    
     async def _get_persons_from_elastic(
         self,
         page_size: int, page_number: int,
@@ -206,21 +221,6 @@ class FilmService:
         persons = [SFilmPersonDetail(**doc['_source']) for doc in docs['hits']['hits']]
         # logger.debug(persons)
         return persons
-
-    async def get_person_by_id(self, person_id: str) -> Optional[SFilmPersonDetail]:
-        # Пытаемся пока не получать данные из кеша, потому что оно работает быстрее, но это следующее задание
-        person = await self._get_person_from_elastic(person_id)
-        if not person:
-            # Если он отсутствует в Elasticsearch, значит, человека вообще нет в базе
-            return None
-        return person
-
-    async def _get_person_from_elastic(self, person_id: str) -> Optional[SFilmPersonDetail]:
-        try:
-            doc = await self.elastic.get(config.ELASTIC_PERSON_INDEX, person_id)
-        except ESNotFoundError:
-            return None
-        return SFilmPersonDetail(**doc['_source'])
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) person !!!
 
 
