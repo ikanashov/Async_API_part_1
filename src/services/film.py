@@ -128,20 +128,29 @@ class FilmService:
 
     # !!! Здесь начинаем работать с ручкой (слово-то какое) genre !!!
     async def get_genre_by_id(self, genre_id: str) -> Optional[SFilmGenre]:
-        # Пытаемся пока не получать данные из кеша, потому что оно работает быстрее, но это следующее задание
-        genre = await self._get_genre_from_elastic(genre_id)
-        if not genre:
-            # Если он отсутствует в Elasticsearch, значит, жанра вообще нет в базе
-            return None
+        data = await self._get_data_from_cache(genre_id)
+        if data:
+            genre = SFilmGenre.parse_raw(data)
+        else:
+            genre = await self._get_genre_from_elastic(genre_id)
+            if genre:
+                await self._put_data_to_cache(genre_id, genre.json())
         return genre
-
+    
     async def get_all_genre(
         self,
         sort: str,
         page_size: int, page_number: int,
     ) -> Optional[List[SFilmGenre]]:
 
-        genres = await self._get_genres_from_elastic(page_size, page_number, sort)
+        key = self.cachekey(str(page_size) + str(page_number) + str(sort))
+        data = await self._get_data_from_cache(key)
+        if data:
+            genres = [SFilmGenre(**row) for row in orjson.loads(data)]
+        else:
+            genres = await self._get_genres_from_elastic(page_size, page_number, sort)
+            data = orjson.dumps([genre.dict() for genre in genres])
+            await self._put_data_to_cache(key, data)
         return genres
 
     async def _get_genre_from_elastic(self, genre_id: str) -> Optional[SFilmGenre]:
