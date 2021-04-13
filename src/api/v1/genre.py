@@ -18,7 +18,6 @@ async def get_all_genre(
     film_service: FilmService = Depends(get_film_service)
 ) -> List[FilmGenre]:
     genres = await film_service.get_all_genre(sort.sort, page.page_size, page.page_number)
-    genres = [FilmGenre(**film.dict(by_alias=True)) for film in genres]
     return genres
 
 # Для примера берем 5bd77168-c5b1-4c9d-bd1f-1193582d9e66
@@ -28,4 +27,4 @@ async def genre_details(genre_id: str, film_service: FilmService = Depends(get_f
     if not genre:
         # Если жанр не найден, отдаём 404 статус
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='genre not found')
-    return FilmGenreDetail(**genre.dict(by_alias=True))
+    return genre

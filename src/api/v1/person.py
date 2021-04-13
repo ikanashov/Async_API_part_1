@@ -20,7 +20,6 @@ async def get_all_person(
     film_service: FilmService = Depends(get_film_service)
 ) -> List[FilmPersonDetail]:
     persons = await film_service.get_all_person(sort.sort, page.page_size, page.page_number)
-    persons = [FilmPersonDetail(**person.dict(by_alias=True)) for person in persons]
     return persons
 
 @router.get('/search', response_model=List[FilmPersonDetail])

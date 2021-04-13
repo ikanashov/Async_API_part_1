@@ -20,7 +20,6 @@ async def get_all_film(
     film_service: FilmService = Depends(get_film_service)
 ) -> List[FilmShort]:
     films = await film_service.get_all_film(sort.sort, page.page_size, page.page_number, genre_filter.genre_filter)
-    films = [FilmShort(**film.dict(by_alias=True)) for film in films]
     return films
 
 
@@ -40,13 +39,5 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
     film = await film_service.get_by_id(film_id)
     if not film:
         # Если фильм не найден, отдаём 404 статус
-        # Желательно пользоваться уже определёнными HTTP-статусами, которые содержат enum
-        # Такой код будет более поддерживаемым
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
-        # Перекладываем данные из models.Film в Film
-        # Обратите внимание, что у модели бизнес-логики есть поле description
-        # Которое отсутствует в модели ответа API.
-        # Если бы использовалась общая модель для бизнес-логики и формирования ответов API
-        # вы бы предоставляли клиентам данные, которые им не нужны
-        # и, возможно, данные, которые опасно возвращать
-    return FilmDetail(**film.dict(by_alias=True))
+    return film

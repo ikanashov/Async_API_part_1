@@ -18,14 +18,9 @@ class FilmPerson(BaseModelOrjson):
     full_name: str
 
 
-# Модель ответа API
 class FilmShort(BaseModelOrjson):
     uuid: UUID4
     title: str
-    # remove test field
-    description: Optional[str]
-    # remove test field
-    genre: List[str]
     imdb_rating: float
 
 
@@ -44,12 +39,6 @@ class FilmGenreDetail(FilmGenre):
 class FilmPersonDetail(FilmPerson):
     role: List[str]
     film_ids: List[UUID4]
-
-
-# unused class remove it
-class DictPage(TypedDict):
-    size: int
-    number: int
 
 
 # remove magic number 1, 50
