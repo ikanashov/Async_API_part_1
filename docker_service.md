@@ -21,6 +21,7 @@ ELASTIC_USER=elastic
 ELASTIC_PASSWORD=<>
 UVICORN_PORT=8011
 NGINX_HTTP_PORT=8083
+ETL_SIZE_LIMIT=500
 ```
 
 DOCKER_PREFIX - Префикс для всех сервисов docker-compose (если запускается более одного экемпляра)  
@@ -39,6 +40,7 @@ ELASTIC_INDEX - индекс Elastic
 ELASTIC_USER - пользователь elastic  
 UVICORN_PORT - порт для uvicorn сервера внутри докер сети  
 NGINX_HTTP_PORT - внешний порт для веб-сервера nginx  
+ETL_SIZE_LIMIT - размер пачки данных для перегрузки данных из postgres в elastic
   
 
 ## После создания конфигурационного файла:
@@ -46,6 +48,8 @@ NGINX_HTTP_PORT - внешний порт для веб-сервера nginx
 Для запуска всех сервисов необходимо выполнить команду ```./start```
 
 Для начальной загрузки данных в elastic необходимо выполнить следующую команду ```./elastic_restore_index.sh```
+
+Также можно запустить контейнер с etl процессом
 
 После выполения этих команд система буде доступна по протколу http и порту указанному в NGINX_HTTP_PORT  
   
