@@ -127,6 +127,14 @@ class FilmService:
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) film !!!
 
     # !!! Здесь начинаем работать с ручкой (слово-то какое) genre !!!
+    async def get_genre_by_id(self, genre_id: str) -> Optional[SFilmGenre]:
+        # Пытаемся пока не получать данные из кеша, потому что оно работает быстрее, но это следующее задание
+        genre = await self._get_genre_from_elastic(genre_id)
+        if not genre:
+            # Если он отсутствует в Elasticsearch, значит, жанра вообще нет в базе
+            return None
+        return genre
+
     async def get_all_genre(
         self,
         sort: str,
@@ -136,6 +144,13 @@ class FilmService:
         genres = await self._get_genres_from_elastic(page_size, page_number, sort)
         return genres
 
+    async def _get_genre_from_elastic(self, genre_id: str) -> Optional[SFilmGenre]:
+        try:
+            doc = await self.elastic.get(config.ELASTIC_GENRE_INDEX, genre_id)
+        except ESNotFoundError:
+            return None
+        return SFilmGenre(**doc['_source'])
+    
     async def _get_genres_from_elastic(
         self,
         page_size: int, page_number: int,
@@ -155,21 +170,6 @@ class FilmService:
         genres = [SFilmGenre(**doc['_source']) for doc in docs['hits']['hits']]
         # logger.debug(genres)
         return genres
-
-    async def get_genre_by_id(self, genre_id: str) -> Optional[SFilmGenre]:
-        # Пытаемся пока не получать данные из кеша, потому что оно работает быстрее, но это следующее задание
-        genre = await self._get_genre_from_elastic(genre_id)
-        if not genre:
-            # Если он отсутствует в Elasticsearch, значит, жанра вообще нет в базе
-            return None
-        return genre
-
-    async def _get_genre_from_elastic(self, genre_id: str) -> Optional[SFilmGenre]:
-        try:
-            doc = await self.elastic.get(config.ELASTIC_GENRE_INDEX, genre_id)
-        except ESNotFoundError:
-            return None
-        return SFilmGenre(**doc['_source'])
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) genre !!!
 
     # !!! Здесь начинаем работать с ручкой (слово-то какое) person !!!
