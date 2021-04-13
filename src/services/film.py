@@ -36,6 +36,7 @@ class FilmService:
         self.redis = redis
         self.elastic = elastic
 
+    # Методы для кеширования в redis
     def cachekey(self, data: str) -> str:
         return sha256(data.encode()).hexdigest()
 
@@ -52,16 +53,12 @@ class FilmService:
     # get_by_id возвращает объект фильма. Он опционален, так как фильм может отсутствовать в базе
     # Не забыть переименовать название
     async def get_by_id(self, film_id: str) -> Optional[SFilm]:
-        # Пытаемся получить данные из кеша, потому что оно работает быстрее
-        film = await self._film_from_cache(film_id)
-        if not film:
-            # Если фильма нет в кеше, то ищем его в Elasticsearch
+        data = await self._get_data_from_cache(film_id)
+        if data:
+            film = SFilm.parse_raw(data)
+        else:
             film = await self._get_film_from_elastic(film_id)
-            if not film:
-                # Если он отсутствует в Elasticsearch, значит, фильма вообще нет в базе
-                return None
-            # Сохраняем фильм  в кеш
-            await self._put_film_to_cache(film)
+            await self._put_data_to_cache(film_id, film.json())
         return film
 
     async def get_all_film(
@@ -127,24 +124,6 @@ class FilmService:
         except ESNotFoundError:
             return None
         return SFilm(**doc['_source'])
-
-    async def _film_from_cache(self, film_id: str) -> Optional[SFilm]:
-        # Пытаемся получить данные о фильме из кеша, используя команду get
-        # https://redis.io/commands/get
-        data = await self.redis.get(film_id)
-        if not data:
-            return None
-
-        # pydantic предоставляет удобное API для создания объекта моделей из json
-        film = SFilm.parse_raw(data)
-        return film
-
-    async def _put_film_to_cache(self, film: SFilm):
-        # Сохраняем данные о фильме, используя команду set
-        # Выставляем время жизни кеша — 5 минут
-        # https://redis.io/commands/set
-        # pydantic позволяет сериализовать модель в json
-        await self.redis.set(film.id, film.json(), expire=config.CLIENTAPI_CACHE_EXPIRE)
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) film !!!
 
     # !!! Здесь начинаем работать с ручкой (слово-то какое) genre !!!
