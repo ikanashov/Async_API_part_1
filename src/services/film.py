@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 from aioredis import Redis
 
-from elasticsearch import AsyncElasticsearch
+from elasticsearch import AsyncElasticsearch, NotFoundError as ESNotFoundError
 
 from fastapi import Depends
 
@@ -58,9 +58,9 @@ class FilmService:
     ) -> Optional[List[SFilm]]:
 
         if genre_filter is not None:
-            filter = ESFilterGenre()
-            filter.query.term.genre.value = genre_filter
-            genre_filter = filter.json()
+            filter_ = ESFilterGenre()
+            filter_.query.term.genre.value = genre_filter
+            genre_filter = filter_.json()
             logger.debug(genre_filter)
         films = await self._get_films_from_elastic(page_size, page_number, sort, body=genre_filter)
         return films
@@ -94,7 +94,7 @@ class FilmService:
     async def _get_film_from_elastic(self, film_id: str) -> Optional[SFilm]:
         try:
             doc = await self.elastic.get(config.ELASTIC_INDEX, film_id)
-        except:
+        except ESNotFoundError:
             return None
         return SFilm(**doc['_source'])
 
@@ -158,7 +158,7 @@ class FilmService:
     async def _get_genre_from_elastic(self, genre_id: str) -> Optional[SFilmGenre]:
         try:
             doc = await self.elastic.get(config.ELASTIC_GENRE_INDEX, genre_id)
-        except:
+        except ESNotFoundError:
             return None
         return SFilmGenre(**doc['_source'])
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) genre !!!
@@ -209,7 +209,7 @@ class FilmService:
     async def _get_person_from_elastic(self, person_id: str) -> Optional[SFilmPersonDetail]:
         try:
             doc = await self.elastic.get(config.ELASTIC_PERSON_INDEX, person_id)
-        except:
+        except ESNotFoundError:
             return None
         return SFilmPersonDetail(**doc['_source'])
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) person !!!

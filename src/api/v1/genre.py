@@ -11,6 +11,7 @@ from services.film import FilmService, get_film_service
 # Объект router, в котором регистрируем обработчики
 router = APIRouter()
 
+
 @router.get('', response_model=List[FilmGenre])
 async def get_all_genre(
     sort: FilmGenreSort = Depends(),
@@ -19,6 +20,7 @@ async def get_all_genre(
 ) -> List[FilmGenre]:
     genres = await film_service.get_all_genre(sort.sort, page.page_size, page.page_number)
     return genres
+
 
 # Для примера берем 5bd77168-c5b1-4c9d-bd1f-1193582d9e66
 @router.get('/{genre_id}', response_model=FilmGenreDetail)

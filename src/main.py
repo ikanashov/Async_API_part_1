@@ -9,7 +9,7 @@ from fastapi.responses import ORJSONResponse
 
 import uvicorn as uvicorn
 
-from api.v1 import genre, film, person
+from api.v1 import film, genre, person
 
 from core.config import config
 from core.logger import LOGGING

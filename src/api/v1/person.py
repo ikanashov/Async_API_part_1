@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from logging import log
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -22,6 +21,7 @@ async def get_all_person(
     persons = await film_service.get_all_person(sort.sort, page.page_size, page.page_number)
     return persons
 
+
 @router.get('/search', response_model=List[FilmPersonDetail])
 async def search_person(
     query: FilmPersonQuery = Depends(),
@@ -38,6 +38,7 @@ async def person_details(person_id: str, film_service: FilmService = Depends(get
     if not person:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='person not found')
     return FilmPersonDetail(**person.dict(by_alias=True))
+
 
 @router.get('/{person_id}/film', response_model=List[FilmShort], deprecated=True)
 async def films_by_person(person_id: str, film_service: FilmService = Depends(get_film_service)) -> List[FilmShort]:
