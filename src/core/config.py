@@ -22,9 +22,13 @@ class FastAPISettings(BaseSettings):
     ELASTIC_USER: str = 'elastic'
     ELASTIC_PASSWORD: str = ''
     ELASTIC_INDEX: str = 'movies'
+    ELASTIC_GENRE_INDEX: str = 'genres'
+    ELASTIC_PERSON_INDEX: str = 'persons'
     PROJECT_NAME: str = 'movies'
     UVICORN_HOST: str = '0.0.0.0'
     UVICORN_PORT: int = 8000
+    CLIENTAPI_DEFAULT_PAGE_SIZE: int = 50
+    CLIENTAPI_CACHE_EXPIRE: int = 60 * 5
 
     class Config:
         # Файл .env должен находится в корне проекта

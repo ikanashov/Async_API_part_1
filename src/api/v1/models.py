@@ -1,10 +1,11 @@
 from enum import Enum
-from typing import List, Optional, TypedDict
+from typing import List, Optional
 
 from fastapi import Query
 
 from pydantic.types import UUID4
 
+from core.config import config
 from core.orjson import BaseModelOrjson
 
 
@@ -18,14 +19,9 @@ class FilmPerson(BaseModelOrjson):
     full_name: str
 
 
-# Модель ответа API
 class FilmShort(BaseModelOrjson):
     uuid: UUID4
     title: str
-    # remove test field
-    description: Optional[str]
-    # remove test field
-    genre: List[str]
     imdb_rating: float
 
 
@@ -37,22 +33,19 @@ class FilmDetail(FilmShort):
     directors: Optional[List[FilmPerson]]
 
 
-class PersonDetail(FilmPerson):
-    role: str
+class FilmGenreDetail(FilmGenre):
+    description: Optional[str]
+
+
+class FilmPersonDetail(FilmPerson):
+    role: List[str]
     film_ids: List[UUID4]
 
 
-# unused class remove it
-class DictPage(TypedDict):
-    size: int
-    number: int
-
-
-# remove magic number 1, 50
 class Page:
     def __init__(
         self,
-        page_size:  int = Query(50, alias='page[size]', ge=1),
+        page_size:  int = Query(config.CLIENTAPI_DEFAULT_PAGE_SIZE, alias='page[size]', ge=1),
         page_number: int = Query(1, alias='page[number]', ge=1)
     ) -> None:
         self.page_size = page_size
@@ -82,6 +75,29 @@ class FilmSort:
         self.sort = sort
 
 
+class FilmGenreSortEnum(str, Enum):
+    genre_name_asc: str = 'name:asc'
+    genre_name_asc_alias: str = 'name'
+    genre_name_desc: str = 'name:desc'
+    genre_name_desc_alias: str = '-name'
+
+
+class FilmGenreSort:
+    def __init__(
+        self,
+        sort: FilmGenreSortEnum = Query(
+            FilmGenreSortEnum.genre_name_asc,
+            title='Sort field',
+            description='Sort field (default: "name:asc", sort by name in ascending order)'
+        )
+    ) -> None:
+        if sort == FilmGenreSortEnum.genre_name_asc_alias:
+            sort = FilmGenreSortEnum.genre_name_asc
+        if sort == FilmGenreSortEnum.genre_name_desc_alias:
+            sort = FilmGenreSortEnum.genre_name_desc
+        self.sort = sort
+
+
 class FilmGenreFilter:
     def __init__(
         self,
@@ -105,3 +121,40 @@ class FilmQuery:
         )
     ) -> None:
         self.query = query
+
+
+class FilmPersonQuery:
+    def __init__(
+        self,
+        query: str = Query(
+            ...,
+            title='Query field',
+            description='Query field (search by word in full_name field)'
+        )
+    ) -> None:
+        self.query = query
+
+
+class FilmPersonSortEnum(str, Enum):
+    person_name_asc: str = 'full_name:asc'
+    person_name_asc_alias: str = 'full_name'
+    person_name_desc: str = 'full_name:desc'
+    person_name_desc_alias: str = '-full_name'
+
+
+class FilmPersonSort:
+    def __init__(
+        self,
+        sort: FilmPersonSortEnum = Query(
+            FilmPersonSortEnum.person_name_asc,
+            title='Sort field',
+            description='Sort field (default: "full_name:asc", sort by full_name in ascending order)'
+        )
+    ) -> None:
+        if sort == FilmPersonSortEnum.person_name_asc_alias:
+            sort = FilmPersonSortEnum.person_name_asc
+        if sort == FilmPersonSortEnum.person_name_desc_alias:
+            sort = FilmPersonSortEnum.person_name_desc
+        # full_name is text field with raw, sort on raw field
+        sort = sort.replace(':', '.raw:')
+        self.sort = sort

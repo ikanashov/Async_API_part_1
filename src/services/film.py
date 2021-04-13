@@ -1,11 +1,12 @@
+import json
 import logging
 import logging.config
 from functools import lru_cache
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from aioredis import Redis
 
-from elasticsearch import AsyncElasticsearch
+from elasticsearch import AsyncElasticsearch, NotFoundError as ESNotFoundError
 
 from fastapi import Depends
 
@@ -16,11 +17,8 @@ from db.elastic import get_elastic
 from db.redis import get_redis
 
 from models.elastic import ESFilterGenre, ESQuery
-from models.film import SFilm
+from models.film import SFilm, SFilmGenre, SFilmPersonDetail
 
-
-# need to remove magic number
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('root')
@@ -35,7 +33,9 @@ class FilmService:
         self.redis = redis
         self.elastic = elastic
 
+    # !!! Здесь начинаем работать с ручкой (слово-то какое) film !!!
     # get_by_id возвращает объект фильма. Он опционален, так как фильм может отсутствовать в базе
+    # Не забыть переименовать название
     async def get_by_id(self, film_id: str) -> Optional[SFilm]:
         # Пытаемся получить данные из кеша, потому что оно работает быстрее
         film = await self._film_from_cache(film_id)
@@ -58,9 +58,9 @@ class FilmService:
     ) -> Optional[List[SFilm]]:
 
         if genre_filter is not None:
-            filter = ESFilterGenre()
-            filter.query.term.genre.value = genre_filter
-            genre_filter = filter.json()
+            filter_ = ESFilterGenre()
+            filter_.query.term.genre.value = genre_filter
+            genre_filter = filter_.json()
             logger.debug(genre_filter)
         films = await self._get_films_from_elastic(page_size, page_number, sort, body=genre_filter)
         return films
@@ -92,7 +92,10 @@ class FilmService:
         return films
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[SFilm]:
-        doc = await self.elastic.get(config.ELASTIC_INDEX, film_id)
+        try:
+            doc = await self.elastic.get(config.ELASTIC_INDEX, film_id)
+        except ESNotFoundError:
+            return None
         return SFilm(**doc['_source'])
 
     async def _film_from_cache(self, film_id: str) -> Optional[SFilm]:
@@ -111,7 +114,105 @@ class FilmService:
         # Выставляем время жизни кеша — 5 минут
         # https://redis.io/commands/set
         # pydantic позволяет сериализовать модель в json
-        await self.redis.set(film.id, film.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
+        await self.redis.set(film.id, film.json(), expire=config.CLIENTAPI_CACHE_EXPIRE)
+    # !!! Здесь заканчиваем работать с ручкой (слово-то какое) film !!!
+
+    # !!! Здесь начинаем работать с ручкой (слово-то какое) genre !!!
+    async def get_all_genre(
+        self,
+        sort: str,
+        page_size: int, page_number: int,
+    ) -> Optional[List[SFilmGenre]]:
+
+        genres = await self._get_genres_from_elastic(page_size, page_number, sort)
+        return genres
+
+    async def _get_genres_from_elastic(
+        self,
+        page_size: int, page_number: int,
+        sort: str = None, body: str = '{"query": {"match_all": {}}}'
+    ) -> Optional[List[SFilmGenre]]:
+
+        from_ = page_size * (page_number - 1)
+        # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
+        # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
+        docs = await self.elastic.search(
+            index=config.ELASTIC_GENRE_INDEX,
+            sort=sort,
+            size=page_size,
+            from_=from_,
+            body=body
+        )
+        genres = [SFilmGenre(**doc['_source']) for doc in docs['hits']['hits']]
+        # logger.debug(genres)
+        return genres
+
+    async def get_genre_by_id(self, genre_id: str) -> Optional[SFilmGenre]:
+        # Пытаемся пока не получать данные из кеша, потому что оно работает быстрее, но это следующее задание
+        genre = await self._get_genre_from_elastic(genre_id)
+        if not genre:
+            # Если он отсутствует в Elasticsearch, значит, жанра вообще нет в базе
+            return None
+        return genre
+
+    async def _get_genre_from_elastic(self, genre_id: str) -> Optional[SFilmGenre]:
+        try:
+            doc = await self.elastic.get(config.ELASTIC_GENRE_INDEX, genre_id)
+        except ESNotFoundError:
+            return None
+        return SFilmGenre(**doc['_source'])
+    # !!! Здесь заканчиваем работать с ручкой (слово-то какое) genre !!!
+
+    # !!! Здесь начинаем работать с ручкой (слово-то какое) person !!!
+    async def get_all_person(
+        self,
+        sort: str,
+        page_size: int, page_number: int,
+    ) -> Optional[List[SFilmPersonDetail]]:
+
+        persons = await self._get_persons_from_elastic(page_size, page_number, sort)
+        return persons
+
+    async def search_person(self, query: str, page_size: int, page_number: int) -> Optional[List[SFilmPersonDetail]]:
+        query_body: Dict = {'query': {'match': {'full_name': {'query': query, 'fuzziness': 'AUTO'}}}}
+        persons = await self._get_persons_from_elastic(page_size, page_number, body=json.dumps(query_body))
+        return persons
+
+    async def _get_persons_from_elastic(
+        self,
+        page_size: int, page_number: int,
+        sort: str = None, body: str = '{"query": {"match_all": {}}}'
+    ) -> Optional[List[SFilmPersonDetail]]:
+
+        from_ = page_size * (page_number - 1)
+        # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
+        # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
+        docs = await self.elastic.search(
+            index=config.ELASTIC_PERSON_INDEX,
+            sort=sort,
+            size=page_size,
+            from_=from_,
+            body=body
+        )
+        persons = [SFilmPersonDetail(**doc['_source']) for doc in docs['hits']['hits']]
+        # logger.debug(persons)
+        return persons
+
+    async def get_person_by_id(self, person_id: str) -> Optional[SFilmPersonDetail]:
+        # Пытаемся пока не получать данные из кеша, потому что оно работает быстрее, но это следующее задание
+        person = await self._get_person_from_elastic(person_id)
+        if not person:
+            # Если он отсутствует в Elasticsearch, значит, человека вообще нет в базе
+            return None
+        return person
+
+    async def _get_person_from_elastic(self, person_id: str) -> Optional[SFilmPersonDetail]:
+        try:
+            doc = await self.elastic.get(config.ELASTIC_PERSON_INDEX, person_id)
+        except ESNotFoundError:
+            return None
+        return SFilmPersonDetail(**doc['_source'])
+    # !!! Здесь заканчиваем работать с ручкой (слово-то какое) person !!!
 
 
 # get_film_service — это провайдер FilmService.
