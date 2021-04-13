@@ -92,7 +92,10 @@ class FilmService:
         return films
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[SFilm]:
-        doc = await self.elastic.get(config.ELASTIC_INDEX, film_id)
+        try:
+            doc = await self.elastic.get(config.ELASTIC_INDEX, film_id)
+        except:
+            return None
         return SFilm(**doc['_source'])
 
     async def _film_from_cache(self, film_id: str) -> Optional[SFilm]:
@@ -153,7 +156,10 @@ class FilmService:
         return genre
 
     async def _get_genre_from_elastic(self, genre_id: str) -> Optional[SFilmGenre]:
-        doc = await self.elastic.get(config.ELASTIC_GENRE_INDEX, genre_id)
+        try:
+            doc = await self.elastic.get(config.ELASTIC_GENRE_INDEX, genre_id)
+        except:
+            return None
         return SFilmGenre(**doc['_source'])
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) genre !!!
 
@@ -201,7 +207,10 @@ class FilmService:
         return person
 
     async def _get_person_from_elastic(self, person_id: str) -> Optional[SFilmPersonDetail]:
-        doc = await self.elastic.get(config.ELASTIC_PERSON_INDEX, person_id)
+        try:
+            doc = await self.elastic.get(config.ELASTIC_PERSON_INDEX, person_id)
+        except:
+            return None
         return SFilmPersonDetail(**doc['_source'])
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) person !!!
 
