@@ -58,7 +58,8 @@ class FilmService:
             film = SFilm.parse_raw(data)
         else:
             film = await self._get_film_from_elastic(film_id)
-            await self._put_data_to_cache(film_id, film.json())
+            if film:
+                await self._put_data_to_cache(film_id, film.json())
         return film
 
     async def get_all_film(
