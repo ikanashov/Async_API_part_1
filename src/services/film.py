@@ -50,9 +50,7 @@ class FilmService:
         await self.redis.set(key, data, expire=config.CLIENTAPI_CACHE_EXPIRE)
 
     # !!! Здесь начинаем работать с ручкой (слово-то какое) film !!!
-    # get_by_id возвращает объект фильма. Он опционален, так как фильм может отсутствовать в базе
-    # Не забыть переименовать название
-    async def get_by_id(self, film_id: str) -> Optional[SFilm]:
+    async def get_film_by_id(self, film_id: str) -> Optional[SFilm]:
         data = await self._get_data_from_cache(film_id)
         if data:
             film = SFilm.parse_raw(data)
@@ -104,10 +102,8 @@ class FilmService:
         page_size: int, page_number: int,
         sort: str = None, body: str = None
     ) -> Optional[List[SFilm]]:
-
         from_ = page_size * (page_number - 1)
-        # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
-        # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
+
         docs = await self.elastic.search(
             index=config.ELASTIC_INDEX,
             sort=sort,
@@ -116,7 +112,6 @@ class FilmService:
             body=body
         )
         films = [SFilm(**doc['_source']) for doc in docs['hits']['hits']]
-        # logger.debug(films)
         return films
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[SFilm]:
@@ -166,10 +161,8 @@ class FilmService:
         page_size: int, page_number: int,
         sort: str = None, body: str = '{"query": {"match_all": {}}}'
     ) -> Optional[List[SFilmGenre]]:
-
         from_ = page_size * (page_number - 1)
-        # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
-        # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
+
         docs = await self.elastic.search(
             index=config.ELASTIC_GENRE_INDEX,
             sort=sort,
@@ -178,7 +171,6 @@ class FilmService:
             body=body
         )
         genres = [SFilmGenre(**doc['_source']) for doc in docs['hits']['hits']]
-        # logger.debug(genres)
         return genres
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) genre !!!
 
@@ -235,10 +227,8 @@ class FilmService:
         page_size: int, page_number: int,
         sort: str = None, body: str = '{"query": {"match_all": {}}}'
     ) -> Optional[List[SFilmPersonDetail]]:
-
         from_ = page_size * (page_number - 1)
-        # Подумать а стоит ли проверять на наличие правильного индекса, если индекс пустой то все работает
-        # а вот если не существует то ошибка 404 надо ли ее обрабатывать ? подумать
+
         docs = await self.elastic.search(
             index=config.ELASTIC_PERSON_INDEX,
             sort=sort,
@@ -247,7 +237,6 @@ class FilmService:
             body=body
         )
         persons = [SFilmPersonDetail(**doc['_source']) for doc in docs['hits']['hits']]
-        # logger.debug(persons)
         return persons
     # !!! Здесь заканчиваем работать с ручкой (слово-то какое) person !!!
 
