@@ -1,4 +1,4 @@
-**# [Порядок запуска сервисов с помощью docker-compose](docker_service.md)
+# [Порядок запуска сервисов с помощью docker-compose](docker_service.md)
 
 # Назначение и имена контейнеров в docker-compose
 **postgrescinema** - база данных postgres  
