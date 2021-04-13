@@ -1,12 +1,12 @@
 **# [Порядок запуска сервисов с помощью docker-compose](docker_service.md)
 
 # Назначение и имена контейнеров в docker-compose
-**postgrescinema** - база данных postgres
-**rediscinema** - redis
-**elasticcinema01** - хранилище elastic
-**etlcinema** - доработанный процесс ETL из прошлого спринта
-**clientapicinema** - собственно сам модуль FastApi
-**nginxcinema** - nginx который отдает это все во внешний мир
+**postgrescinema** - база данных postgres  
+**rediscinema** - redis  
+**elasticcinema01** - хранилище elastic  
+**etlcinema** - доработанный процесс ETL из прошлого спринта  
+**clientapicinema** - собственно сам модуль FastApi  
+**nginxcinema** - nginx который отдает это все во внешний мир  
 
 # Техническое задание
 
