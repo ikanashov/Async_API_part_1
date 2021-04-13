@@ -1,8 +1,8 @@
 import json
-from hashlib import sha256
 import logging
 import logging.config
 from functools import lru_cache
+from hashlib import sha256
 from typing import Dict, List, Optional
 
 from aioredis import Redis
@@ -88,12 +88,12 @@ class FilmService:
         query_body = ESQuery()
         query_body.query.multi_match.query = query
         body = query_body.json(by_alias=True)
-        
+
         key = self.cachekey(str(page_size) + str(page_number) + str(body))
         data = await self._get_data_from_cache(key)
         if data:
             films = [SFilm(**row) for row in orjson.loads(data)]
-        else:        
+        else:
             films = await self._get_films_from_elastic(page_size, page_number, body=body)
             data = orjson.dumps([film.dict() for film in films])
             await self._put_data_to_cache(key, data)
@@ -137,7 +137,7 @@ class FilmService:
             if genre:
                 await self._put_data_to_cache(genre_id, genre.json())
         return genre
-    
+
     async def get_all_genre(
         self,
         sort: str,
@@ -160,7 +160,7 @@ class FilmService:
         except ESNotFoundError:
             return None
         return SFilmGenre(**doc['_source'])
-    
+
     async def _get_genres_from_elastic(
         self,
         page_size: int, page_number: int,
@@ -192,7 +192,7 @@ class FilmService:
             if person:
                 await self._put_data_to_cache(person_id, person.json())
         return person
-   
+
     async def get_all_person(
         self,
         sort: str,
@@ -229,7 +229,7 @@ class FilmService:
         except ESNotFoundError:
             return None
         return SFilmPersonDetail(**doc['_source'])
-    
+
     async def _get_persons_from_elastic(
         self,
         page_size: int, page_number: int,
