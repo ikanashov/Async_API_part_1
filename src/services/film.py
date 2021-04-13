@@ -1,4 +1,5 @@
 import json
+from hashlib import sha256
 import logging
 import logging.config
 from functools import lru_cache
@@ -9,6 +10,8 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError as ESNotFoundError
 
 from fastapi import Depends
+
+import orjson
 
 from core.config import config
 from core.logger import LOGGING
@@ -33,6 +36,18 @@ class FilmService:
         self.redis = redis
         self.elastic = elastic
 
+    def cachekey(self, data: str) -> str:
+        return sha256(data.encode()).hexdigest()
+
+    async def _get_data_from_cache(self, key: str) -> Optional[str]:
+        data = await self.redis.get(key)
+        if not data:
+            return None
+        return data
+
+    async def _put_data_to_cache(self, key: str, data: str):
+        await self.redis.set(key, data, expire=config.CLIENTAPI_CACHE_EXPIRE)
+
     # !!! Здесь начинаем работать с ручкой (слово-то какое) film !!!
     # get_by_id возвращает объект фильма. Он опционален, так как фильм может отсутствовать в базе
     # Не забыть переименовать название
@@ -49,7 +64,6 @@ class FilmService:
             await self._put_film_to_cache(film)
         return film
 
-    # Здесь же будем пытаться кэшировать и брать из кэша
     async def get_all_film(
         self,
         sort: str,
@@ -61,14 +75,30 @@ class FilmService:
             filter_ = ESFilterGenre()
             filter_.query.term.genre.value = genre_filter
             genre_filter = filter_.json()
-            logger.debug(genre_filter)
-        films = await self._get_films_from_elastic(page_size, page_number, sort, body=genre_filter)
+
+        key = self.cachekey(str(page_size) + str(page_number) + str(genre_filter))
+        data = await self._get_data_from_cache(key)
+        if data:
+            films = [SFilm(**row) for row in orjson.loads(data)]
+        else:
+            films = await self._get_films_from_elastic(page_size, page_number, sort, body=genre_filter)
+            data = orjson.dumps([film.dict() for film in films])
+            await self._put_data_to_cache(key, data)
         return films
 
     async def search_film(self, query: str, page_size: int, page_number: int) -> Optional[List[SFilm]]:
         query_body = ESQuery()
         query_body.query.multi_match.query = query
-        films = await self._get_films_from_elastic(page_size, page_number, body=query_body.json(by_alias=True))
+        body = query_body.json(by_alias=True)
+        
+        key = self.cachekey(str(page_size) + str(page_number) + str(body))
+        data = await self._get_data_from_cache(key)
+        if data:
+            films = [SFilm(**row) for row in orjson.loads(data)]
+        else:        
+            films = await self._get_films_from_elastic(page_size, page_number, body=body)
+            data = orjson.dumps([film.dict() for film in films])
+            await self._put_data_to_cache(key, data)
         return films
 
     async def _get_films_from_elastic(
