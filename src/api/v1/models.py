@@ -5,6 +5,7 @@ from fastapi import Query
 
 from pydantic.types import UUID4
 
+from core.config import config
 from core.orjson import BaseModelOrjson
 
 
@@ -41,11 +42,10 @@ class FilmPersonDetail(FilmPerson):
     film_ids: List[UUID4]
 
 
-# remove magic number 1, 50
 class Page:
     def __init__(
         self,
-        page_size:  int = Query(50, alias='page[size]', ge=1),
+        page_size:  int = Query(config.CLIENTAPI_DEFAULT_PAGE_SIZE, alias='page[size]', ge=1),
         page_number: int = Query(1, alias='page[number]', ge=1)
     ) -> None:
         self.page_size = page_size
